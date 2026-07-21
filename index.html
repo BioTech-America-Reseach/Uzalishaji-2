@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="sw"><head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260721-05-536556a"}');</script><script src="/_sdk/e358eac22bd01364.telemetry_sdk.js" integrity="sha512-KPxp3rw4K8Nu9ceWJc3gyM7srgaZxiFWOVbyu260EYzzAqdz10mfo5xyXrCx+wEKtGo77JbtmwXvFLbwrGzwvw=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Facebook Poster</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up { animation: fadeUp 0.5s ease forwards; opacity:0; }
+    .chat-bubble { max-width: 85%; white-space: pre-wrap; }
+    .canvas-container { position: relative; width: 100%; }
+    .canvas-container canvas { width: 100%; border-radius: 0.75rem; cursor: crosshair; }
+    .tool-active { ring: 2px; box-shadow: 0 0 0 2px #4ade80; }
+  </style>
+  <script src="/_sdk/935a53bc2e11fb8d.data_sdk.js" integrity="sha512-qr2oyPnEys1WebcOABaRh6hG77r5PWpqeWW6JTKbRJqly/INsfBi31CVNlTmHqjgeLpkVmmHZJUdxSx/32tOFQ=="></script>
+  <script src="/_sdk/7831c9b82769a23f.resizing_sdk.js" type="text/javascript" integrity="sha512-8T/qhF3yB5dtqHof6yvY2492zFsme1nYV1+FuXfYvPz63uo2L30fnKiOabmH0Sl3qhplMLgxjytDR8IvycRwKQ=="></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen p-4 md:p-6" style="background: linear-gradient(135deg, rgb(15, 23, 42), rgb(6, 78, 59));">
+  <main class="max-w-2xl mx-auto space-y-4">
+   <header class="fade-up text-center">
+    <h1 data-template-id="page-title" class="canva-text font-black" style="color: rgb(74, 222, 128); font-weight: 900; font-style: normal; font-size: 28px;">🌿 AI Facebook Poster + Picha</h1>
+    <p data-template-id="subtitle" class="canva-text mt-1" style="color: rgb(156, 163, 175); font-weight: 400; font-style: normal; font-size: 16px;">Zalisha picha za AI kama MrBeast thumbnails • Chapisha kwenye pages zote</p>
+   </header><!-- Settings -->
+   <details data-template-id="settings-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20" style="background: rgba(255, 255, 255, 0.05);">
+    <summary data-template-id="settings-toggle" class="canva-text cursor-pointer p-4 font-bold flex items-center gap-2" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">⚙️ Settings — Pages, API &amp; Supabase</summary>
+    <div class="p-4 pt-0 space-y-3">
+     <div><label data-template-id="label-api-key" for="api_key" class="canva-text text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">AI API Key (Mistral)</label><input id="api_key" type="password" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
+     </div>
+     <div><label data-template-id="label-pollination-key" for="pollination_key" class="canva-text text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Pollination AI Key (Picha)</label><input id="pollination_key" type="password" value="sk_XnHMlGTSSKKMUkvVBGjHZB4gN30MBupw" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
+     </div>
+     <div><label data-template-id="label-supabase-url" for="supabase_url" class="canva-text text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Supabase URL</label><input id="supabase_url" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
+     </div>
+     <div><label data-template-id="label-supabase-key" for="supabase_key" class="canva-text text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Supabase Anon Key</label><input id="supabase_key" type="password" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
+     </div><button id="save-api-btn" data-template-id="save-api-button" type="button" class="canva-button w-full py-2 rounded-xl font-bold" style="background: linear-gradient(90deg, rgb(22, 163, 74), rgb(74, 222, 128)); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">💾 Hifadhi Settings</button>
+     <hr class="border-white/10 my-3">
+     <h3 data-template-id="pages-heading" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 19px;">📄 Pages Zako za Facebook</h3>
+     <div id="pages-list" class="space-y-2"></div>
+     <div class="border border-white/10 rounded-lg p-3 space-y-2">
+      <input id="new-page-name" type="text" placeholder="Jina la Page" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <input id="new-page-id" type="text" placeholder="Page ID" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <input id="new-page-token" type="password" placeholder="Access Token" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <button id="add-page-btn" data-template-id="add-page-button" type="button" class="canva-button w-full py-2 rounded-xl font-bold" style="background: rgb(37, 99, 235); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">➕ Ongeza Page</button>
+     </div>
+     <p id="settings-status" class="text-center text-sm text-green-400 hidden"></p>
+    </div>
+   </details><!-- Chat -->
+   <section data-template-id="chat-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
+    <h2 data-template-id="chat-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">💬 Ongea na AI — Andaa Post</h2>
+    <div id="chat-messages" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+    <form id="chat-form" class="flex gap-2">
+     <input id="chat-input" type="text" placeholder="Mfano: Andaa posti kuhusu biashara yangu..." class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-semibold text-sm"><i data-lucide="send" style="width:16px;height:16px;"></i></button>
+    </form>
+   </section><!-- Post Editor -->
+   <section data-template-id="post-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
+    <h2 data-template-id="post-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">📝 Hariri Post Yako</h2><textarea id="post-text" rows="4" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500 resize-none" placeholder="Post itaonekana hapa..."></textarea>
+    <div class="flex gap-2">
+     <button id="clear-post-btn" type="button" class="flex-1 bg-red-600/80 hover:bg-red-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> <span data-template-id="btn-clear" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Futa</span></button> <button id="edit-post-btn" type="button" class="flex-1 bg-blue-600/80 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="edit" style="width:14px;height:14px;"></i> <span data-template-id="btn-edit" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Hariri</span></button> <button id="regen-btn" type="button" class="flex-1 bg-purple-600/80 hover:bg-purple-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> <span data-template-id="btn-regen" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Boresha</span></button>
+    </div>
+   </section><!-- Image Editor -->
+   <section data-template-id="image-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
+    <h2 data-template-id="image-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">🖼️ Picha — AI Generate, Draw &amp; Edit</h2><!-- Upload / AI Generate -->
+    <div class="grid grid-cols-1 gap-2">
+     <div><label data-template-id="label-upload" class="canva-text text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">📁 Pakia picha kutoka simu/kompyuta</label><input id="image-file" type="file" accept="image/*" class="w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer">
+     </div>
+     <div class="border border-white/10 rounded-lg p-3 space-y-2">
+      <label data-template-id="label-ai-generate" class="canva-text text-sm block font-semibold" style="color: rgb(209, 213, 219); font-weight: 600; font-style: normal; font-size: 16px;">🤖 Zalisha Picha kwa AI (Pollination)</label> <input id="ai-image-prompt" type="text" placeholder="Mfano: Picha ya biashara ya chakula..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <button id="gen-ai-image-btn" type="button" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span data-template-id="btn-gen-image" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Zalisha Picha</span></button> <button id="auto-gen-btn" type="button" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="wand-2" style="width:14px;height:14px;"></i> <span data-template-id="btn-auto-gen" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">🎬 Auto — MrBeast Style</span></button>
+      <p id="gen-status" class="text-center text-xs text-gray-400 hidden"></p>
+     </div>
+    </div><!-- Image Preview -->
+    <div id="image-preview-container" class="hidden border border-white/10 rounded-lg p-3">
+     <p class="text-xs text-gray-400 mb-2">📸 Picha iliyozalishwa</p><img id="preview-image" class="w-full rounded-lg" style="max-height: 400px; object-fit: contain;">
+     <div class="flex gap-2 mt-2">
+      <button id="use-preview-btn" type="button" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1"><i data-lucide="check" style="width:12px;height:12px;"></i> Tumia picha hii</button> <button id="discard-preview-btn" type="button" class="flex-1 bg-red-600/60 hover:bg-red-500 text-white py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1"><i data-lucide="x" style="width:12px;height:12px;"></i> Ondoa</button>
+     </div>
+    </div><!-- Canvas Tools -->
+    <div class="flex gap-1 flex-wrap">
+     <button id="tool-select" type="button" class="tool-btn bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 tool-active"><i data-lucide="mouse-pointer" style="width:12px;height:12px;"></i> Select</button> <button id="tool-draw" type="button" class="tool-btn bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"><i data-lucide="pencil" style="width:12px;height:12px;"></i> Draw</button> <button id="tool-erase" type="button" class="tool-btn bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"><i data-lucide="eraser" style="width:12px;height:12px;"></i> Erase</button> <button id="clear-canvas-btn" type="button" class="bg-red-600/60 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1"><i data-lucide="trash" style="width:12px;height:12px;"></i> Clear</button> <input id="draw-color" type="color" value="#ff0000" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0"> <input id="draw-size" type="range" min="2" max="20" value="4" class="w-16">
+    </div><!-- Text Overlay -->
+    <div class="space-y-2 border border-white/10 rounded-lg p-3">
+     <label data-template-id="label-overlay" class="canva-text text-sm block font-semibold" style="color: rgb(209, 213, 219); font-weight: 600; font-style: normal; font-size: 16px;">✍️ Ongeza Text kwenye Picha</label> <input id="overlay-text" type="text" placeholder="Andika text hapa..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500">
+     <div class="flex gap-2 items-center flex-wrap">
+      <div class="flex items-center gap-1"><label class="text-xs text-gray-400">Rangi:</label><input id="text-color" type="color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0">
+      </div>
+      <div class="flex items-center gap-1"><label class="text-xs text-gray-400">Size:</label><input id="text-size" type="range" min="16" max="120" value="48" class="w-20"><span id="text-size-val" class="text-xs text-gray-400">48</span>
+      </div><label class="flex items-center gap-1 text-xs text-gray-400 cursor-pointer"><input id="text-bold" type="checkbox" checked="" class="accent-green-500"> Bold</label>
+     </div><button id="add-text-btn" type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-semibold"><span data-template-id="btn-add-text" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Ongeza Text</span></button>
+    </div><!-- Add image layer -->
+    <div class="border border-white/10 rounded-lg p-3 space-y-2">
+     <label data-template-id="label-add-layer" class="canva-text text-sm block font-semibold" style="color: rgb(209, 213, 219); font-weight: 600; font-style: normal; font-size: 16px;">📷 Ongeza picha juu ya picha</label> <input id="layer-file" type="file" accept="image/*" class="w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:font-semibold file:cursor-pointer">
+    </div><!-- Canvas -->
+    <div class="canvas-container">
+     <canvas id="image-canvas" width="1200" height="630" class="bg-black/30 rounded-xl w-full"></canvas>
+    </div>
+    <div class="flex gap-2">
+     <button id="download-btn" type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="download" style="width:14px;height:14px;"></i> <span data-template-id="btn-download" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Pakua Picha</span></button> <button id="ai-enhance-btn" type="button" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span data-template-id="btn-ai-enhance" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">AI Pendekezo</span></button>
+    </div>
+   </section><!-- Publish -->
+   <section data-template-id="publish-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
+    <h2 data-template-id="publish-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">📅 Chapisha — Jipange Kila Page</h2>
+    <div id="publish-pages-list" class="space-y-2"></div>
+    <div id="publish-pages-info" class="text-center text-sm text-gray-400"></div><button id="publish-btn" data-template-id="publish-button" type="button" class="canva-button w-full py-3 rounded-xl font-bold text-center" style="background: linear-gradient(90deg, rgb(29, 78, 216), rgb(59, 130, 246)); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">🚀 Chapisha kwenye Pages</button>
+    <p id="publish-status" class="text-center text-sm hidden"></p>
+   </section>
+  </main>
+  <script src="/_sdk/25045d9a217df38c.editing_sdk.js" integrity="sha512-P8YtOp9+8xclRi4/Fv8cdNbmryoIvT0A/M6Eaz/llWBrptNsVI19w8SO7I6hRSR55YnKh3INPLkF54kPEXuB5A=="></script>
+  <script>
+    let records = [];
+    let pages = [];
+    let apiKey = '';
+    let pollinationKey = 'sk_XnHMlGTSSKKMUkvVBGjHZB4gN30MBupw';
+    let supabaseUrl = '';
+    let supabaseKey = '';
+    let conversation = [];
+    let pastPosts = [];
+    let canvasImage = null;
+    let textOverlays = [];
+    let imageLayers = [];
+    let drawingPaths = [];
+    let currentTool = 'select';
+    let isDrawing = false;
+    let currentPath = null;
+
+    const canvas = document.getElementById('image-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Text size display
+    document.getElementById('text-size').addEventListener('input', e => {
+      document.getElementById('text-size-val').textContent = e.target.value;
+    });
+
+    const handler = {
+      onDataChanged(data) {
+        if (!Array.isArray(data)) data = [];
+        records = data;
+        pages = data.filter(r => r.page_id && r.page_id !== '' && r.prompt_template !== '__config__');
+        const configRec = data.find(r => r.prompt_template === '__config__');
+        if (configRec) {
+          apiKey = configRec.api_key || '';
+          supabaseUrl = configRec.page_name || '';
+          supabaseKey = configRec.access_token || '';
+          if (configRec.page_id) pollinationKey = configRec.page_id;
+          document.getElementById('api_key').value = apiKey;
+          document.getElementById('supabase_url').value = supabaseUrl;
+          document.getElementById('supabase_key').value = supabaseKey;
+          document.getElementById('pollination_key').value = pollinationKey;
+        }
+        renderPagesList();
+        renderPublishPages();
+        updatePublishInfo();
+      }
+    };
+
+    (async () => {
+      try {
+        const r = await window.dataSdk.init(handler);
+        if (!r.isOk) console.error('Data SDK init error:', r.error);
+      } catch (e) {
+        console.error('Data SDK failed:', e);
+      }
+      setTimeout(loadPastPosts, 1000);
+    })();
+
+    function renderPagesList() {
+      const container = document.getElementById('pages-list');
+      if (!container) return;
+      container.innerHTML = '';
+      pages.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between bg-black/30 rounded-lg px-3 py-2';
+        const textDiv = document.createElement('div');
+        textDiv.className = 'flex-1';
+        const textSpan = document.createElement('span');
+        textSpan.textContent = `${p.page_name || 'Page '+(i+1)} `;
+        textSpan.className = 'text-white text-sm';
+        textDiv.appendChild(textSpan);
+        const idSpan = document.createElement('span');
+        idSpan.className = 'text-gray-500 text-xs ml-1';
+        idSpan.textContent = `(${p.page_id})`;
+        textDiv.appendChild(idSpan);
+        div.appendChild(textDiv);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'text-red-400 hover:text-red-300 text-xs';
+        btn.innerHTML = '<i data-lucide="x" style="width:14px;height:14px;"></i>';
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          const result = await window.dataSdk.delete(p);
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          if (!result.isOk) console.error('Delete error:', result.error);
+        });
+        div.appendChild(btn);
+        container.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    function updatePublishInfo() {
+      document.getElementById('publish-pages-info').textContent = pages.length > 0 ? `📡 Post itaenda kwenye page ${pages.length}` : '⚠️ Ongeza page kwanza';
+    }
+
+    // Save settings
+    document.getElementById('save-api-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('save-api-btn');
+      btn.disabled = true; btn.style.opacity = '0.5';
+      apiKey = document.getElementById('api_key').value.trim();
+      pollinationKey = document.getElementById('pollination_key').value.trim();
+      supabaseUrl = document.getElementById('supabase_url').value.trim();
+      supabaseKey = document.getElementById('supabase_key').value.trim();
+      const configRec = records.find(r => r.prompt_template === '__config__');
+      const data = { page_name: supabaseUrl, page_id: pollinationKey, access_token: supabaseKey, api_key: apiKey, prompt_template: '__config__' };
+      let r;
+      if (configRec) r = await window.dataSdk.update({ ...configRec, ...data });
+      else r = await window.dataSdk.create(data);
+      btn.disabled = false; btn.style.opacity = '1';
+      showSettingsStatus(r.isOk ? '✓ Imehifadhiwa!' : 'Imeshindwa', !r.isOk);
+      if (!r.isOk) console.error('Save API error:', r.error);
+      if (r.isOk) loadPastPosts();
+    });
+
+    document.getElementById('add-page-btn').addEventListener('click', async () => {
+      const name = document.getElementById('new-page-name').value.trim();
+      const pid = document.getElementById('new-page-id').value.trim();
+      const token = document.getElementById('new-page-token').value.trim();
+      if (!pid || !token) { showSettingsStatus('Weka Page ID na Token', true); return; }
+      const btn = document.getElementById('add-page-btn');
+      btn.disabled = true; btn.style.opacity = '0.5';
+      const r = await window.dataSdk.create({ page_name: name || 'Page', page_id: pid, access_token: token, api_key: '', prompt_template: '' });
+      btn.disabled = false; btn.style.opacity = '1';
+      if (r.isOk) { 
+        document.getElementById('new-page-name').value = ''; 
+        document.getElementById('new-page-id').value = ''; 
+        document.getElementById('new-page-token').value = ''; 
+        showSettingsStatus('✓ Page imeongezwa!', false); 
+      }
+      else { 
+        showSettingsStatus('Imeshindwa', true);
+        console.error('Add page error:', r.error);
+      }
+    });
+
+    function showSettingsStatus(msg, isError) {
+      const el = document.getElementById('settings-status');
+      el.textContent = msg; el.className = 'text-center text-sm ' + (isError ? 'text-red-400' : 'text-green-400');
+      el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    // Supabase
+    async function loadPastPosts() {
+      if (!supabaseUrl || !supabaseKey) return;
+      try {
+        const res = await fetch(supabaseUrl + '/rest/v1/posts?order=created_at.desc&limit=30', { headers: { 'apikey': supabaseKey, 'Authorization': 'Bearer ' + supabaseKey } });
+        if (res.ok) pastPosts = await res.json();
+      } catch(e) {}
+    }
+
+    async function savePostToSupabase(content) {
+      if (!supabaseUrl || !supabaseKey) return;
+      try {
+        await fetch(supabaseUrl + '/rest/v1/posts', { method: 'POST', headers: { 'apikey': supabaseKey, 'Authorization': 'Bearer ' + supabaseKey, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ content, created_at: new Date().toISOString() }) });
+        pastPosts.unshift({ content, created_at: new Date().toISOString() });
+      } catch(e) {}
+    }
+
+    function getPastPostsContext() {
+      if (pastPosts.length === 0) return '';
+      return '\n\nPosts zilizopita:\n' + pastPosts.slice(0, 10).map((p, i) => `${i+1}. ${p.content}`).join('\n');
+    }
+
+    // Chat
+    document.getElementById('chat-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim(); if (!msg) return;
+      input.value = '';
+      addChatBubble(msg, 'user');
+      conversation.push({ role: 'user', content: msg });
+      if (!apiKey) { addChatBubble('⚠️ Weka API Key kwenye Settings kwanza.', 'ai'); return; }
+      addChatBubble('⏳ Inafikiri...', 'ai', 'thinking-bubble');
+      try {
+        const sysPrompt = `Wewe ni mtaalamu wa kuandaa posts za Facebook. Andaa posts bila markdown, bila bold (**), bila asterisks (*), bila ALL CAPS, bila mkato. Muundo safi na wa kuvutia. Jibu kwa Kiswahili isipokuwa uambiwe vinginevyo.${getPastPostsContext()}`;
+        const res = await fetch('https://api.mistral.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ model: 'mistral-small-latest', messages: [{ role: 'system', content: sysPrompt }, ...conversation] }) });
+        const json = await res.json();
+        const el = document.getElementById('thinking-bubble'); if (el) el.remove();
+        if (json.choices && json.choices[0]) {
+          const reply = json.choices[0].message.content;
+          conversation.push({ role: 'assistant', content: reply });
+          addChatBubble(reply, 'ai');
+          document.getElementById('post-text').value = reply;
+        } else addChatBubble('❌ Jibu halikupatikana.', 'ai');
+      } catch (err) { const el = document.getElementById('thinking-bubble'); if (el) el.remove(); addChatBubble('❌ ' + err.message, 'ai'); }
+    });
+
+    function addChatBubble(text, role, id) {
+      const div = document.createElement('div');
+      div.className = 'flex ' + (role === 'user' ? 'justify-end' : 'justify-start');
+      if (id) div.id = id;
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble rounded-xl px-3 py-2 text-sm ' + (role === 'user' ? 'bg-green-600 text-white' : 'bg-white/10 text-gray-200');
+      bubble.textContent = text;
+      div.appendChild(bubble);
+      document.getElementById('chat-messages').appendChild(div);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+    }
+
+    document.getElementById('clear-post-btn').addEventListener('click', () => { document.getElementById('post-text').value = ''; });
+    document.getElementById('edit-post-btn').addEventListener('click', () => { const t = document.getElementById('post-text'); t.focus(); t.select(); });
+
+    document.getElementById('regen-btn').addEventListener('click', async () => {
+      if (!apiKey) { showStatus('Weka API Key kwanza', true); return; }
+      if (conversation.length === 0) { showStatus('Ongea na AI kwanza', true); return; }
+      const btn = document.getElementById('regen-btn'); btn.disabled = true; btn.style.opacity = '0.5';
+      conversation.push({ role: 'user', content: 'Boresha post hiyo au andaa toleo jipya bora zaidi.' });
+      try {
+        const res = await fetch('https://api.mistral.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ model: 'mistral-small-latest', messages: [{ role: 'system', content: `Mtaalamu wa posts. Bila markdown/bold/asterisks. Kiswahili.${getPastPostsContext()}` }, ...conversation] }) });
+        const json = await res.json();
+        if (json.choices && json.choices[0]) { const reply = json.choices[0].message.content; conversation.push({ role: 'assistant', content: reply }); document.getElementById('post-text').value = reply; addChatBubble(reply, 'ai'); }
+      } catch (err) { showStatus('❌ ' + err.message, true); }
+      btn.disabled = false; btn.style.opacity = '1';
+    });
+
+    // === IMAGE EDITOR ===
+
+    // Tools
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('tool-active'));
+        btn.classList.add('tool-active');
+        currentTool = btn.id.replace('tool-', '');
+        canvas.style.cursor = currentTool === 'select' ? 'crosshair' : currentTool === 'draw' ? 'crosshair' : 'cell';
+      });
+    });
+
+    document.getElementById('clear-canvas-btn').addEventListener('click', () => {
+      canvasImage = null; textOverlays = []; imageLayers = []; drawingPaths = []; renderCanvas();
+    });
+
+    // Upload main image
+    document.getElementById('image-file').addEventListener('change', (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => loadImageToCanvas(ev.target.result);
+      reader.readAsDataURL(file);
+    });
+
+    function loadImageToCanvas(src) {
+      const img = new Image();
+      img.onload = () => { canvasImage = img; renderCanvas(); };
+      img.src = src;
+    }
+
+    // Add image layer
+    document.getElementById('layer-file').addEventListener('change', (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => { imageLayers.push({ img, x: 100, y: 100, w: 300, h: 200 }); renderCanvas(); };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // AI Image Generation via Pollination
+    document.getElementById('gen-ai-image-btn').addEventListener('click', async () => {
+      const prompt = document.getElementById('ai-image-prompt').value.trim();
+      if (!prompt) { showGenStatus('Andika prompt kwanza'); return; }
+      await generateAIImage(prompt);
+    });
+
+    document.getElementById('auto-gen-btn').addEventListener('click', async () => {
+      const postText = document.getElementById('post-text').value.trim();
+      if (!postText && !apiKey) { showGenStatus('Andika post au prompt kwanza'); return; }
+      // Use Mistral to create optimal image prompt
+      showGenStatus('🧠 AI inaandaa prompt ya picha...');
+      let imagePrompt = '';
+      if (apiKey) {
+        try {
+          const res = await fetch('https://api.mistral.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ model: 'mistral-small-latest', messages: [{ role: 'system', content: 'You create image generation prompts. Create a detailed English prompt for a Facebook post thumbnail image. Style: MrBeast YouTube thumbnail style - bold colors, dramatic lighting, eye-catching composition, vibrant effects, professional quality, 3D elements, neon glow effects, dramatic shadows. The image should be attention-grabbing and viral-worthy. Reply ONLY with the prompt, nothing else.' }, { role: 'user', content: 'Create image prompt for this post: ' + postText }] }) });
+          const json = await res.json();
+          if (json.choices && json.choices[0]) imagePrompt = json.choices[0].message.content.trim();
+        } catch(e) {}
+      }
+      if (!imagePrompt) imagePrompt = postText + ', MrBeast style thumbnail, bold vibrant colors, dramatic lighting, eye-catching, professional, neon effects';
+      document.getElementById('ai-image-prompt').value = imagePrompt;
+      await generateAIImage(imagePrompt);
+    });
+
+    async function generateAIImage(prompt) {
+      const btn = document.getElementById('gen-ai-image-btn');
+      const btn2 = document.getElementById('auto-gen-btn');
+      btn.disabled = true; btn2.disabled = true; btn.style.opacity = '0.5'; btn2.style.opacity = '0.5';
+      showGenStatus('🎨 Inazalisha picha... karibu tu');
+
+      try {
+        const fullPrompt = prompt + ', professional, vibrant, high quality, 1200x630 facebook post thumbnail';
+        const encodedPrompt = encodeURIComponent(fullPrompt);
+        
+        // Direct Pollinations API - no auth needed
+        const imageUrl = 'https://image.pollinations.ai/prompt/' + encodedPrompt + '?width=1200&height=630&model=flux&enhance=true';
+        
+        let loadTimer = setTimeout(() => {
+          btn.disabled = false; btn2.disabled = false; btn.style.opacity = '1'; btn2.style.opacity = '1';
+          showGenStatus('⏱️ Kupakia kumezaa. Jaribu prompt fupi au tena.');
+          setTimeout(() => hideGenStatus(), 4000);
+        }, 60000);
+
+        const previewImg = document.getElementById('preview-image');
+        previewImg.src = imageUrl;
+        
+        previewImg.onload = () => {
+          clearTimeout(loadTimer);
+          document.getElementById('image-preview-container').classList.remove('hidden');
+          showGenStatus('✅ Picha hapa! Chapisha au hariri.');
+          btn.disabled = false; btn2.disabled = false; btn.style.opacity = '1'; btn2.style.opacity = '1';
+          setTimeout(() => hideGenStatus(), 3000);
+        };
+        
+        previewImg.onerror = () => {
+          clearTimeout(loadTimer);
+          btn.disabled = false; btn2.disabled = false; btn.style.opacity = '1'; btn2.style.opacity = '1';
+          showGenStatus('❌ Picha haiwezi kuzalishwa. Jaribu prompt mpya.');
+          setTimeout(() => hideGenStatus(), 4000);
+        };
+      } catch (err) {
+        btn.disabled = false; btn2.disabled = false; btn.style.opacity = '1'; btn2.style.opacity = '1';
+        showGenStatus('❌ ' + err.message);
+        setTimeout(() => hideGenStatus(), 3000);
+      }
+    }
+
+    function showGenStatus(msg) { const el = document.getElementById('gen-status'); el.textContent = msg; el.classList.remove('hidden'); }
+    function hideGenStatus() { document.getElementById('gen-status').classList.add('hidden'); }
+
+    // Preview image handlers
+    document.getElementById('use-preview-btn').addEventListener('click', () => {
+      const previewImg = document.getElementById('preview-image');
+      const img = new Image();
+      img.onload = () => {
+        canvasImage = img;
+        renderCanvas();
+        document.getElementById('image-preview-container').classList.add('hidden');
+        showGenStatus('✅ Picha iliyochapishwa kwenye canvas!');
+        setTimeout(() => hideGenStatus(), 2000);
+      };
+      img.src = previewImg.src;
+    });
+
+    document.getElementById('discard-preview-btn').addEventListener('click', () => {
+      document.getElementById('image-preview-container').classList.add('hidden');
+    });
+
+    // Canvas rendering
+    function renderCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (canvasImage) {
+        ctx.drawImage(canvasImage, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#555'; ctx.font = '28px DM Sans'; ctx.textAlign = 'center';
+        ctx.fillText('Pakia au zalisha picha', canvas.width/2, canvas.height/2);
+      }
+      // Image layers
+      imageLayers.forEach(l => { ctx.drawImage(l.img, l.x, l.y, l.w, l.h); });
+      // Drawing paths
+      drawingPaths.forEach(path => {
+        if (path.points.length < 2) return;
+        ctx.beginPath(); ctx.strokeStyle = path.color; ctx.lineWidth = path.size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.moveTo(path.points[0].x, path.points[0].y);
+        for (let i = 1; i < path.points.length; i++) ctx.lineTo(path.points[i].x, path.points[i].y);
+        ctx.stroke();
+      });
+      // Text overlays
+      textOverlays.forEach(o => {
+        ctx.font = (o.bold ? '900 ' : '400 ') + o.size + 'px DM Sans';
+        ctx.fillStyle = o.color; ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 6; ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
+        ctx.fillText(o.text, o.x, o.y);
+        // Stroke for MrBeast effect
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2; ctx.strokeText(o.text, o.x, o.y);
+        ctx.shadowColor = 'transparent';
+      });
+    }
+
+    // Add text
+    document.getElementById('add-text-btn').addEventListener('click', () => {
+      const text = document.getElementById('overlay-text').value.trim(); if (!text) return;
+      textOverlays.push({ text, color: document.getElementById('text-color').value, size: parseInt(document.getElementById('text-size').value), bold: document.getElementById('text-bold').checked, x: canvas.width/2, y: canvas.height/2 });
+      renderCanvas();
+      document.getElementById('overlay-text').value = '';
+    });
+
+    // Canvas interaction (drag text, draw, erase)
+    let dragging = null;
+    let dragLayer = null;
+
+    function getCanvasPos(cx, cy) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: (cx - rect.left) * (canvas.width / rect.width), y: (cy - rect.top) * (canvas.height / rect.height) };
+    }
+
+    canvas.addEventListener('mousedown', (e) => handleDown(e.clientX, e.clientY));
+    canvas.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+    canvas.addEventListener('mouseup', handleUp);
+    canvas.addEventListener('mouseleave', handleUp);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleDown(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+    canvas.addEventListener('touchend', handleUp);
+
+    function handleDown(cx, cy) {
+      const pos = getCanvasPos(cx, cy);
+      if (currentTool === 'select') {
+        // Try text
+        for (let i = textOverlays.length - 1; i >= 0; i--) {
+          const o = textOverlays[i]; ctx.font = (o.bold?'900 ':'400 ')+o.size+'px DM Sans';
+          const w = ctx.measureText(o.text).width;
+          if (pos.x > o.x-w/2 && pos.x < o.x+w/2 && pos.y > o.y-o.size && pos.y < o.y+10) { dragging = { idx: i, offX: o.x-pos.x, offY: o.y-pos.y }; return; }
+        }
+        // Try image layers
+        for (let i = imageLayers.length - 1; i >= 0; i--) {
+          const l = imageLayers[i];
+          if (pos.x > l.x && pos.x < l.x+l.w && pos.y > l.y && pos.y < l.y+l.h) { dragLayer = { idx: i, offX: l.x-pos.x, offY: l.y-pos.y }; return; }
+        }
+      } else if (currentTool === 'draw') {
+        isDrawing = true;
+        currentPath = { color: document.getElementById('draw-color').value, size: parseInt(document.getElementById('draw-size').value), points: [pos] };
+        drawingPaths.push(currentPath);
+      } else if (currentTool === 'erase') {
+        isDrawing = true;
+        currentPath = { color: canvasImage ? 'erase' : '#1a1a2e', size: parseInt(document.getElementById('draw-size').value) * 3, points: [pos] };
+        // For erase, we use destination-out compositing during render - simplified: white
+        currentPath.color = '#1a1a2e';
+        drawingPaths.push(currentPath);
+      }
+    }
+
+    function handleMove(cx, cy) {
+      const pos = getCanvasPos(cx, cy);
+      if (dragging) { textOverlays[dragging.idx].x = pos.x + dragging.offX; textOverlays[dragging.idx].y = pos.y + dragging.offY; renderCanvas(); }
+      else if (dragLayer) { imageLayers[dragLayer.idx].x = pos.x + dragLayer.offX; imageLayers[dragLayer.idx].y = pos.y + dragLayer.offY; renderCanvas(); }
+      else if (isDrawing && currentPath) { currentPath.points.push(pos); renderCanvas(); }
+    }
+
+    function handleUp() { dragging = null; dragLayer = null; isDrawing = false; currentPath = null; }
+
+    // Download
+    document.getElementById('download-btn').addEventListener('click', () => {
+      // If we have AI-generated image, download directly from preview instead of tainted canvas
+      const previewImg = document.getElementById('preview-image');
+      if (previewImg.src && !previewImg.classList.contains('hidden')) {
+        const link = document.createElement('a');
+        link.download = 'post-image.jpg';
+        link.href = previewImg.src;
+        link.click();
+      } else if (canvasImage) {
+        // If user uploaded image, create new canvas without taint and export
+        const cleanCanvas = document.createElement('canvas');
+        cleanCanvas.width = canvas.width;
+        cleanCanvas.height = canvas.height;
+        const cleanCtx = cleanCanvas.getContext('2d');
+        cleanCtx.drawImage(canvasImage, 0, 0, canvas.width, canvas.height);
+        // Apply text overlays
+        textOverlays.forEach(o => {
+          cleanCtx.font = (o.bold ? '900 ' : '400 ') + o.size + 'px DM Sans';
+          cleanCtx.fillStyle = o.color;
+          cleanCtx.textAlign = 'center';
+          cleanCtx.shadowColor = 'rgba(0,0,0,0.8)';
+          cleanCtx.shadowBlur = 6;
+          cleanCtx.shadowOffsetX = 3;
+          cleanCtx.shadowOffsetY = 3;
+          cleanCtx.fillText(o.text, o.x, o.y);
+          cleanCtx.strokeStyle = 'rgba(0,0,0,0.5)';
+          cleanCtx.lineWidth = 2;
+          cleanCtx.strokeText(o.text, o.x, o.y);
+          cleanCtx.shadowColor = 'transparent';
+        });
+        const link = document.createElement('a');
+        link.download = 'post-image.png';
+        link.href = cleanCanvas.toDataURL('image/png');
+        link.click();
+      } else {
+        showStatus('Pakia au zalisha picha kwanza', true);
+      }
+    });
+
+    // AI text suggestion
+    document.getElementById('ai-enhance-btn').addEventListener('click', async () => {
+      if (!apiKey) { showStatus('Weka API Key kwanza', true); return; }
+      const btn = document.getElementById('ai-enhance-btn'); btn.disabled = true; btn.style.opacity = '0.5';
+      try {
+        const postText = document.getElementById('post-text').value.trim();
+        const res = await fetch('https://api.mistral.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey }, body: JSON.stringify({ model: 'mistral-small-latest', messages: [{ role: 'user', content: `Kwa post: "${postText || 'general'}", pendekeza text fupi ya kuweka kwenye picha (maneno 3-7, BOLD style kama MrBeast thumbnails). Jibu text moja tu.` }] }) });
+        const json = await res.json();
+        if (json.choices && json.choices[0]) { document.getElementById('overlay-text').value = json.choices[0].message.content.trim(); showStatus('✨ AI imependekeza text!', false); }
+      } catch (err) { showStatus('❌ ' + err.message, true); }
+      btn.disabled = false; btn.style.opacity = '1';
+    });
+
+    // Render publish pages with individual schedule
+    function renderPublishPages() {
+      const container = document.getElementById('publish-pages-list');
+      container.innerHTML = '';
+      pages.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'border border-white/10 rounded-lg p-3 space-y-2 bg-black/20';
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold text-white">${p.page_name || 'Page '+(i+1)}</span>
+            <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+              <input type="checkbox" class="page-schedule-toggle accent-green-500" data-page-idx="${i}" checked>
+              <span>Chapisha</span>
+            </label>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs text-gray-500 block mb-1">Tarehe</label>
+              <input type="date" class="page-schedule-date w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-500" data-page-idx="${i}">
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 block mb-1">Saa</label>
+              <input type="time" class="page-schedule-time w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-green-500" data-page-idx="${i}">
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      
+      // Set today's date as default
+      const today = new Date().toISOString().split('T')[0];
+      container.querySelectorAll('.page-schedule-date').forEach(input => {
+        input.value = today;
+      });
+      
+      // Set current time as default
+      const now = new Date();
+      const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      container.querySelectorAll('.page-schedule-time').forEach(input => {
+        input.value = timeStr;
+      });
+    }
+
+    // Publish
+    document.getElementById('publish-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('publish-btn');
+      const postText = document.getElementById('post-text').value.trim();
+      if (!postText) { showStatus('Andika post kwanza!', true); return; }
+      if (pages.length === 0) { showStatus('Ongeza page kwanza!', true); return; }
+      btn.disabled = true; btn.style.opacity = '0.5';
+      let successCount = 0, errors = [];
+
+      // Get checked pages with their schedules
+      const pagesToPublish = [];
+      document.querySelectorAll('.page-schedule-toggle:checked').forEach(checkbox => {
+        const idx = parseInt(checkbox.dataset.pageIdx);
+        const dateInput = document.querySelector(`.page-schedule-date[data-page-idx="${idx}"]`);
+        const timeInput = document.querySelector(`.page-schedule-time[data-page-idx="${idx}"]`);
+        const dateStr = dateInput.value;
+        const timeStr = timeInput.value;
+        const scheduledTime = new Date(`${dateStr}T${timeStr || '12:00'}`);
+        pagesToPublish.push({ page: pages[idx], scheduledTime });
+      });
+
+      if (pagesToPublish.length === 0) { showStatus('Chagua angalau page moja!', true); btn.disabled = false; btn.style.opacity = '1'; return; }
+
+      for (const { page, scheduledTime } of pagesToPublish) {
+        try {
+          let photoId = null;
+          let imageUrl = null;
+          
+          // Check if we have AI-generated image (from preview)
+          const previewImg = document.getElementById('preview-image');
+          if (previewImg.src && !previewImg.classList.contains('hidden')) {
+            // Pollinations AI images have CORS headers, use directly
+            imageUrl = previewImg.src;
+          } else if (canvasImage) {
+            // For uploaded images with overlays, create clean canvas and convert to blob
+            const cleanCanvas = document.createElement('canvas');
+            cleanCanvas.width = canvas.width;
+            cleanCanvas.height = canvas.height;
+            const cleanCtx = cleanCanvas.getContext('2d');
+            cleanCtx.drawImage(canvasImage, 0, 0, canvas.width, canvas.height);
+            textOverlays.forEach(o => {
+              cleanCtx.font = (o.bold ? '900 ' : '400 ') + o.size + 'px DM Sans';
+              cleanCtx.fillStyle = o.color;
+              cleanCtx.textAlign = 'center';
+              cleanCtx.shadowColor = 'rgba(0,0,0,0.8)';
+              cleanCtx.shadowBlur = 6;
+              cleanCtx.shadowOffsetX = 3;
+              cleanCtx.shadowOffsetY = 3;
+              cleanCtx.fillText(o.text, o.x, o.y);
+              cleanCtx.strokeStyle = 'rgba(0,0,0,0.5)';
+              cleanCtx.lineWidth = 2;
+              cleanCtx.strokeText(o.text, o.x, o.y);
+              cleanCtx.shadowColor = 'transparent';
+            });
+            // Use blob data URL from clean canvas (not tainted)
+            const blobUrl = cleanCanvas.toDataURL('image/jpeg', 0.9);
+            imageUrl = blobUrl;
+          }
+          
+          if (imageUrl) {
+            const photoBody = new FormData();
+            photoBody.append('url', imageUrl);
+            photoBody.append('access_token', page.access_token);
+            photoBody.append('published', 'false');
+            const photoRes = await fetch(`https://graph.facebook.com/v19.0/${page.page_id}/photos`, { method: 'POST', body: photoBody });
+            const photoJson = await photoRes.json();
+            if (photoJson.id) photoId = photoJson.id;
+          }
+          const feedBody = new FormData();
+          feedBody.append('message', postText);
+          feedBody.append('access_token', page.access_token);
+          if (photoId) feedBody.append('attached_media', JSON.stringify([{ media_fbid: photoId }]));
+          
+          // Add scheduling if future date (Facebook requires at least 10 minutes in future)
+          const now = new Date();
+          const minScheduleTime = new Date(now.getTime() + 10 * 60000);
+          if (scheduledTime >= minScheduleTime) {
+            const unixTimestamp = Math.floor(scheduledTime.getTime() / 1000);
+            feedBody.append('scheduled_publish_time', unixTimestamp);
+            feedBody.append('published', 'false');
+          }
+          
+          const res = await fetch(`https://graph.facebook.com/v19.0/${page.page_id}/feed`, { method: 'POST', body: feedBody });
+          const json = await res.json();
+          if (json.id || json.post_id) successCount++;
+          else errors.push(page.page_name + ': ' + (json.error?.message || 'Imeshindwa'));
+        } catch (err) { errors.push(page.page_name + ': ' + err.message); }
+      }
+      btn.disabled = false; btn.style.opacity = '1';
+      if (successCount > 0) { showStatus(`✅ Imechapishwa kwenye page ${successCount}/${pagesToPublish.length}!`, false); await savePostToSupabase(postText); }
+      if (errors.length > 0) setTimeout(() => showStatus('⚠️ ' + errors.join(' | '), true), successCount > 0 ? 3000 : 0);
+    });
+
+    function showStatus(msg, isError) {
+      const el = document.getElementById('publish-status');
+      el.textContent = msg; el.className = 'text-center text-sm ' + (isError ? 'text-red-400' : 'text-green-400');
+      el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    renderCanvas();
+    lucide.createIcons();
+  </script>
+ 
+</body></html>
