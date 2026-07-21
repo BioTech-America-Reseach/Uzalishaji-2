@@ -12,17 +12,49 @@
     .fade-up { animation: fadeUp 0.5s ease forwards; opacity:0; }
     .chat-bubble { max-width: 85%; white-space: pre-wrap; }
     .canvas-container { position: relative; width: 100%; }
-    .canvas-container canvas { width: 100%; border-radius: 0.75rem; cursor: crosshair; }
+    .canvas-container canvas { width: 100%; border-radius: 0.75rem; cursor: crosshair; height: auto; }
     .tool-active { ring: 2px; box-shadow: 0 0 0 2px #4ade80; }
+    
+    /* Responsive typography */
+    @media (max-width: 640px) {
+      h1 { font-size: 1.5rem !important; }
+      h2 { font-size: 1.125rem !important; }
+      p { font-size: 0.875rem !important; }
+      .text-sm { font-size: 0.75rem !important; }
+      .text-xs { font-size: 0.65rem !important; }
+      button { font-size: 0.8rem !important; padding: 0.5rem 0.75rem !important; }
+      input[type="text"], input[type="password"], input[type="date"], input[type="time"], textarea, select {
+        font-size: 0.875rem !important;
+        padding: 0.5rem !important;
+      }
+    }
+    
+    @media (min-width: 641px) and (max-width: 1024px) {
+      h1 { font-size: 2rem !important; }
+      h2 { font-size: 1.25rem !important; }
+      p { font-size: 0.95rem !important; }
+    }
+    
+    @media (min-width: 1025px) {
+      h1 { font-size: 2.5rem !important; }
+      h2 { font-size: 1.5rem !important; }
+      p { font-size: 1rem !important; }
+    }
+    
+    /* Flexible grid layouts */
+    .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 0.5rem; }
+    @media (max-width: 640px) {
+      .tool-grid { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); gap: 0.25rem; }
+    }
   </style>
   <script src="/_sdk/935a53bc2e11fb8d.data_sdk.js" integrity="sha512-qr2oyPnEys1WebcOABaRh6hG77r5PWpqeWW6JTKbRJqly/INsfBi31CVNlTmHqjgeLpkVmmHZJUdxSx/32tOFQ=="></script>
   <script src="/_sdk/7831c9b82769a23f.resizing_sdk.js" type="text/javascript" integrity="sha512-8T/qhF3yB5dtqHof6yvY2492zFsme1nYV1+FuXfYvPz63uo2L30fnKiOabmH0Sl3qhplMLgxjytDR8IvycRwKQ=="></script>
  </head>
- <body data-template-id="__page-root" class="min-h-screen p-4 md:p-6" style="background: linear-gradient(135deg, rgb(15, 23, 42), rgb(6, 78, 59));">
-  <main class="max-w-2xl mx-auto space-y-4">
+ <body data-template-id="__page-root" class="min-h-screen p-2 sm:p-4 md:p-6" style="background: linear-gradient(135deg, rgb(15, 23, 42), rgb(6, 78, 59));">
+  <main class="max-w-2xl mx-auto space-y-3 sm:space-y-4">
    <header class="fade-up text-center">
-    <h1 data-template-id="page-title" class="canva-text font-black" style="color: rgb(74, 222, 128); font-weight: 900; font-style: normal; font-size: 28px;">🌿 AI Facebook Poster + Picha</h1>
-    <p data-template-id="subtitle" class="canva-text mt-1" style="color: rgb(156, 163, 175); font-weight: 400; font-style: normal; font-size: 16px;">Zalisha picha za AI kama MrBeast thumbnails • Chapisha kwenye pages zote</p>
+    <h1 data-template-id="page-title" class="canva-text font-black text-2xl sm:text-4xl md:text-5xl" style="color: rgb(74, 222, 128); font-weight: 900; font-style: normal; font-size: 28px;">🌿 AI Facebook Poster + Picha</h1>
+    <p data-template-id="subtitle" class="canva-text mt-1 text-xs sm:text-sm md:text-base" style="color: rgb(156, 163, 175); font-weight: 400; font-style: normal; font-size: 16px;">Zalisha picha za AI kama MrBeast thumbnails • Chapisha kwenye pages zote</p>
    </header><!-- Settings -->
    <details data-template-id="settings-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20" style="background: rgba(255, 255, 255, 0.05);">
     <summary data-template-id="settings-toggle" class="canva-text cursor-pointer p-4 font-bold flex items-center gap-2" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">⚙️ Settings — Pages, API &amp; Supabase</summary>
@@ -47,23 +79,23 @@
    <section data-template-id="chat-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
     <h2 data-template-id="chat-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">💬 Ongea na AI — Andaa Post</h2>
     <div id="chat-messages" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-    <form id="chat-form" class="flex gap-2">
-     <input id="chat-input" type="text" placeholder="Mfano: Andaa posti kuhusu biashara yangu..." class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-semibold text-sm"><i data-lucide="send" style="width:16px;height:16px;"></i></button>
+    <form id="chat-form" class="flex gap-1 sm:gap-2">
+     <input id="chat-input" type="text" placeholder="Mfano: Andaa posti kuhusu biashara yangu..." class="flex-1 bg-black/40 border border-white/10 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-green-500"> <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm"><i data-lucide="send" style="width:16px;height:16px;"></i></button>
     </form>
    </section><!-- Post Editor -->
-   <section data-template-id="post-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
-    <h2 data-template-id="post-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">📝 Hariri Post Yako</h2><textarea id="post-text" rows="4" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500 resize-none" placeholder="Post itaonekana hapa..."></textarea>
-    <div class="flex gap-2">
-     <button id="clear-post-btn" type="button" class="flex-1 bg-red-600/80 hover:bg-red-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> <span data-template-id="btn-clear" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Futa</span></button> <button id="edit-post-btn" type="button" class="flex-1 bg-blue-600/80 hover:bg-blue-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="edit" style="width:14px;height:14px;"></i> <span data-template-id="btn-edit" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Hariri</span></button> <button id="regen-btn" type="button" class="flex-1 bg-purple-600/80 hover:bg-purple-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> <span data-template-id="btn-regen" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Boresha</span></button>
+   <section data-template-id="post-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-2 sm:p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
+    <h2 data-template-id="post-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">📝 Hariri Post Yako</h2><textarea id="post-text" rows="4" class="w-full bg-black/40 border border-white/10 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-green-500 resize-none" placeholder="Post itaonekana hapa..."></textarea>
+    <div class="flex gap-1 sm:gap-2 flex-wrap sm:flex-nowrap">
+     <button id="clear-post-btn" type="button" class="flex-1 bg-red-600/80 hover:bg-red-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-0.5 sm:gap-1"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> <span data-template-id="btn-clear" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Futa</span></button> <button id="edit-post-btn" type="button" class="flex-1 bg-blue-600/80 hover:bg-blue-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-0.5 sm:gap-1"><i data-lucide="edit" style="width:14px;height:14px;"></i> <span data-template-id="btn-edit" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Hariri</span></button> <button id="regen-btn" type="button" class="flex-1 bg-purple-600/80 hover:bg-purple-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-0.5 sm:gap-1"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> <span data-template-id="btn-regen" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Boresha</span></button>
     </div>
    </section><!-- Image Editor -->
-   <section data-template-id="image-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
+   <section data-template-id="image-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-2 sm:p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
     <h2 data-template-id="image-title" class="canva-text font-bold text-center" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 18px;">🖼️ Picha — AI Generate, Draw &amp; Edit</h2><!-- Upload / AI Generate -->
     <div class="grid grid-cols-1 gap-2">
-     <div><label data-template-id="label-upload" class="canva-text text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">📁 Pakia picha kutoka simu/kompyuta</label><input id="image-file" type="file" accept="image/*" class="w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer">
+     <div><label data-template-id="label-upload" class="canva-text text-xs sm:text-sm block mb-1" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">📁 Pakia picha kutoka simu/kompyuta</label><input id="image-file" type="file" accept="image/*" class="w-full text-xs sm:text-sm text-gray-300 file:mr-2 sm:file:mr-3 file:py-1 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer file:text-xs sm:file:text-sm">
      </div>
-     <div class="border border-white/10 rounded-lg p-3 space-y-2">
-      <label data-template-id="label-ai-generate" class="canva-text text-sm block font-semibold" style="color: rgb(209, 213, 219); font-weight: 600; font-style: normal; font-size: 16px;">🤖 Zalisha Picha kwa AI (Pollination)</label> <input id="ai-image-prompt" type="text" placeholder="Mfano: Picha ya biashara ya chakula..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500"> <button id="gen-ai-image-btn" type="button" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span data-template-id="btn-gen-image" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Zalisha Picha</span></button> <button id="auto-gen-btn" type="button" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="wand-2" style="width:14px;height:14px;"></i> <span data-template-id="btn-auto-gen" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">🎬 Auto — MrBeast Style</span></button>
+     <div class="border border-white/10 rounded-lg p-2 sm:p-3 space-y-2">
+      <label data-template-id="label-ai-generate" class="canva-text text-xs sm:text-sm block font-semibold" style="color: rgb(209, 213, 219); font-weight: 600; font-style: normal; font-size: 16px;">🤖 Zalisha Picha kwa AI (Pollination)</label> <input id="ai-image-prompt" type="text" placeholder="Mfano: Picha ya biashara ya chakula..." class="w-full bg-black/40 border border-white/10 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-green-500"> <button id="gen-ai-image-btn" type="button" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span data-template-id="btn-gen-image" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Zalisha Picha</span></button> <button id="auto-gen-btn" type="button" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2"><i data-lucide="wand-2" style="width:14px;height:14px;"></i> <span data-template-id="btn-auto-gen" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">🎬 Auto — MrBeast Style</span></button>
       <p id="gen-status" class="text-center text-xs text-gray-400 hidden"></p>
      </div>
     </div><!-- Image Preview -->
@@ -91,8 +123,8 @@
     <div class="canvas-container">
      <canvas id="image-canvas" width="1200" height="630" class="bg-black/30 rounded-xl w-full"></canvas>
     </div>
-    <div class="flex gap-2">
-     <button id="download-btn" type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="download" style="width:14px;height:14px;"></i> <span data-template-id="btn-download" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Pakua Picha</span></button> <button id="ai-enhance-btn" type="button" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span data-template-id="btn-ai-enhance" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">AI Pendekezo</span></button>
+    <div class="flex gap-1 sm:gap-2">
+     <button id="download-btn" type="button" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-0.5 sm:gap-1"><i data-lucide="download" style="width:14px;height:14px;"></i> <span data-template-id="btn-download" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Pakua Picha</span></button> <button id="ai-enhance-btn" type="button" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-0.5 sm:gap-1"><i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span data-template-id="btn-ai-enhance" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">AI Pendekezo</span></button>
     </div>
    </section><!-- Publish -->
    <section data-template-id="publish-section" class="canva-section backdrop-blur rounded-xl border border-green-500/20 p-4 space-y-3" style="background: rgba(255, 255, 255, 0.05);">
@@ -147,17 +179,24 @@
         renderPagesList();
         renderPublishPages();
         updatePublishInfo();
+        // Load past posts from Supabase when data changes
+        if (supabaseUrl && supabaseKey) {
+          loadPastPosts();
+        }
       }
     };
 
     (async () => {
       try {
         const r = await window.dataSdk.init(handler);
-        if (!r.isOk) console.error('Data SDK init error:', r.error);
+        if (!r.isOk) {
+          console.error('Data SDK init error:', r.error);
+        } else {
+          // Data SDK initialized successfully - onDataChanged will be called automatically
+        }
       } catch (e) {
         console.error('Data SDK failed:', e);
       }
-      setTimeout(loadPastPosts, 1000);
     })();
 
     function renderPagesList() {
