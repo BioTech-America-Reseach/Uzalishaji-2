@@ -45,13 +45,12 @@
         .debug-box .success { color: #4ade80; }
         .debug-box .info { color: #60a5fa; }
         .debug-box .warn { color: #fbbf24; }
-        @media (max-width: 640px) { .schedule-grid { grid-template-columns: 1fr; } body { padding: 10px; } }
-        
         .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; z-index: 9999; border-left: 4px solid #4ade80; max-width: 90%; animation: slideIn 0.3s ease; }
         .toast-error { border-left-color: #f87171; }
         .toast-success { border-left-color: #4ade80; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast.hidden { display: none; }
+        @media (max-width: 640px) { .schedule-grid { grid-template-columns: 1fr; } body { padding: 10px; } }
     </style>
 </head>
 <body>
@@ -59,14 +58,13 @@
     <div class="max-w-3xl mx-auto space-y-4">
         <header class="text-center fade-up">
             <h1 class="text-3xl md:text-4xl font-black" style="color: #4ade80;">🌿 AI Facebook Poster + Picha</h1>
-            <p class="text-gray-400 text-sm md:text-base mt-1">Zalisha picha za AI kama MrBeast thumbnails • Chapisha kwenye pages zote</p>
+            <p class="text-gray-400 text-sm md:text-base mt-1">Zalisha picha za AI • Chapisha kwenye Facebook Pages</p>
         </header>
 
         <details class="glass p-4" open>
             <summary class="cursor-pointer font-bold text-white text-lg flex items-center gap-2">⚙️ Settings — Pages, API &amp; Supabase</summary>
             <div class="mt-4 space-y-3">
                 <div><label class="text-gray-300 text-sm block mb-1">🔑 AI API Key (Mistral)</label><input type="password" id="apiKey" placeholder="Ingiza API key yako..."></div>
-                <div><label class="text-gray-300 text-sm block mb-1">🎨 Pollination AI Key (Picha)</label><input type="password" id="pollinationKey" placeholder="Pollination API Key..."></div>
                 <div><label class="text-gray-300 text-sm block mb-1">🗄️ Supabase URL</label><input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co"></div>
                 <div><label class="text-gray-300 text-sm block mb-1">🔐 Supabase Anon Key</label><input type="password" id="supabaseKey" placeholder="Supabase anon key..."></div>
                 <button onclick="saveSettings()" class="btn-primary w-full">💾 Hifadhi Settings</button>
@@ -80,7 +78,6 @@
                     <input type="password" id="pageToken" placeholder="Access Token">
                     <button onclick="addPage()" class="btn-primary w-full" style="background: #2563eb;">➕ Ongeza Page</button>
                 </div>
-                <button onclick="syncToSupabase()" class="btn-secondary w-full" style="background: #059669;">☁️ Sync kwa Supabase</button>
             </div>
         </details>
 
@@ -107,11 +104,11 @@
             <h2 class="text-white font-bold text-center text-lg">🖼️ Picha — AI Generate, Draw &amp; Edit</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                <div><label class="text-gray-300 text-sm block mb-1">📁 Pakia picha kutoka simu/kompyuta</label><input type="file" id="imageUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm"></div>
+                <div><label class="text-gray-300 text-sm block mb-1">📁 Pakia picha</label><input type="file" id="imageUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm"></div>
                 <div class="space-y-2">
-                    <label class="text-gray-300 text-sm block mb-1">🤖 Zalisha Picha kwa AI (Pollination)</label>
+                    <label class="text-gray-300 text-sm block mb-1">🤖 Zalisha Picha</label>
                     <div class="flex gap-2">
-                        <input type="text" id="aiPrompt" placeholder="Mfano: Picha ya biashara ya chakula..." class="flex-1 text-sm">
+                        <input type="text" id="aiPrompt" placeholder="Eleza picha unayotaka..." class="flex-1 text-sm">
                         <button onclick="generateAIImage()" class="btn-primary px-3 text-sm" style="background:linear-gradient(135deg,#9333ea,#db2777);">✨</button>
                         <button onclick="autoGenerateMrBeast()" class="btn-primary px-3 text-sm" style="background:linear-gradient(135deg,#d97706,#ea580c);">🎬</button>
                     </div>
@@ -137,19 +134,19 @@
             </div>
 
             <div class="border border-white/10 rounded-lg p-3 mt-3">
-                <label class="text-gray-300 text-sm block font-semibold">✍️ Ongeza Text kwenye Picha</label>
+                <label class="text-gray-300 text-sm block font-semibold">✍️ Ongeza Text</label>
                 <input type="text" id="overlayText" placeholder="Andika text hapa..." class="mb-2">
                 <div class="flex flex-wrap gap-2 items-center">
                     <input type="color" id="textColor" value="#ffffff" class="w-8 h-8">
                     <input type="range" id="textSize" min="12" max="120" value="48" class="w-20">
                     <span class="text-gray-400 text-xs" id="textSizeLabel">48</span>
                     <label class="flex items-center gap-1 text-xs text-gray-400"><input type="checkbox" id="textBold" checked> Bold</label>
-                    <button onclick="addTextOverlay()" class="btn-primary text-sm px-3" style="background:#2563eb;">➕ Ongeza Text</button>
+                    <button onclick="addTextOverlay()" class="btn-primary text-sm px-3" style="background:#2563eb;">➕ Ongeza</button>
                 </div>
             </div>
 
             <div class="border border-white/10 rounded-lg p-3 mt-3">
-                <label class="text-gray-300 text-sm block font-semibold">📷 Ongeza picha juu ya picha</label>
+                <label class="text-gray-300 text-sm block font-semibold">📷 Ongeza picha juu</label>
                 <input type="file" id="layerUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm">
             </div>
 
@@ -158,7 +155,7 @@
             </div>
 
             <div class="flex flex-wrap gap-2 mt-3">
-                <button onclick="downloadImage()" class="btn-primary flex-1">⬇️ Pakua Picha</button>
+                <button onclick="downloadImage()" class="btn-primary flex-1">⬇️ Pakua</button>
                 <button onclick="aiEnhanceText()" class="btn-secondary flex-1">✨ AI Pendekezo</button>
             </div>
         </section>
@@ -173,50 +170,10 @@
     </div>
 
     <script>
-        // ========== PERSISTENT STORAGE ==========
-        function saveToLocalStorage() {
-            try {
-                const data = {
-                    apiKey: document.getElementById('apiKey').value,
-                    pollinationKey: document.getElementById('pollinationKey').value,
-                    supabaseUrl: document.getElementById('supabaseUrl').value,
-                    supabaseKey: document.getElementById('supabaseKey').value,
-                    pages: state.pages,
-                    conversation: state.conversation,
-                    pastPosts: state.pastPosts
-                };
-                localStorage.setItem('ai_poster_data', JSON.stringify(data));
-                console.log('💾 Data saved to localStorage');
-            } catch(e) {
-                console.error('Save to localStorage error:', e);
-            }
-        }
-
-        function loadFromLocalStorage() {
-            try {
-                const raw = localStorage.getItem('ai_poster_data');
-                if (!raw) return false;
-                const data = JSON.parse(raw);
-                if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
-                if (data.pollinationKey) document.getElementById('pollinationKey').value = data.pollinationKey;
-                if (data.supabaseUrl) document.getElementById('supabaseUrl').value = data.supabaseUrl;
-                if (data.supabaseKey) document.getElementById('supabaseKey').value = data.supabaseKey;
-                if (data.pages) state.pages = data.pages;
-                if (data.conversation) state.conversation = data.conversation;
-                if (data.pastPosts) state.pastPosts = data.pastPosts;
-                console.log('📂 Data loaded from localStorage');
-                return true;
-            } catch(e) {
-                console.error('Load from localStorage error:', e);
-                return false;
-            }
-        }
-
         // ========== STATE ==========
         let state = {
             pages: [],
             apiKey: '',
-            pollinationKey: '',
             supabaseUrl: '',
             supabaseKey: '',
             canvasImage: null,
@@ -238,8 +195,7 @@
             const box = document.getElementById('debugBox');
             box.style.display = 'block';
             const time = new Date().toLocaleTimeString();
-            const className = type || 'info';
-            box.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
+            box.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
             box.scrollTop = box.scrollHeight;
             console.log(`[${type.toUpperCase()}]`, msg);
         }
@@ -337,7 +293,6 @@
         document.getElementById('imageUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            debugLog('📁 Inapakia picha: ' + file.name, 'info');
             const reader = new FileReader();
             reader.onload = function(ev) {
                 const img = new Image();
@@ -345,7 +300,6 @@
                     state.canvasImage = img;
                     renderCanvas();
                     showImageStatus('✅ Picha imepakiwa!', 'success');
-                    debugLog('✅ Picha imepakiwa: ' + img.width + 'x' + img.height, 'success');
                 };
                 img.src = ev.target.result;
             };
@@ -355,7 +309,6 @@
         document.getElementById('layerUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            debugLog('📁 Inapakia layer: ' + file.name, 'info');
             const reader = new FileReader();
             reader.onload = function(ev) {
                 const img = new Image();
@@ -363,7 +316,6 @@
                     state.imageLayers.push({ img: img, x: 50, y: 50, w: 250, h: 180 });
                     renderCanvas();
                     showImageStatus('✅ Picha imeongezwa!', 'success');
-                    debugLog('✅ Layer imeongezwa: ' + img.width + 'x' + img.height, 'success');
                 };
                 img.src = ev.target.result;
             };
@@ -385,7 +337,6 @@
             renderCanvas();
             document.getElementById('overlayText').value = '';
             showImageStatus('✅ Maandishi yameongezwa!', 'success');
-            debugLog('✍️ Text imeongezwa: ' + text, 'success');
         }
 
         function clearCanvas() {
@@ -395,7 +346,6 @@
             state.drawingPaths = [];
             renderCanvas();
             showImageStatus('🗑️ Picha imefutwa', 'info');
-            debugLog('🗑️ Canvas imefutwa', 'info');
         }
 
         function downloadImage() {
@@ -403,7 +353,6 @@
             link.download = 'post-image.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
-            debugLog('⬇️ Picha inapakuliwa', 'info');
         }
 
         function editPost() {
@@ -437,13 +386,12 @@
         function generateAIImage() {
             const prompt = document.getElementById('aiPrompt').value.trim();
             if (!prompt) { showImageStatus('⚠️ Andika prompt', 'error'); return; }
-            const pollinationKey = document.getElementById('pollinationKey').value.trim() || 'sk_XnHMlGTSSKKMUkvVBGjHZB4gN30MBupw';
             debugLog('🎨 Inazalisha picha kwa prompt: ' + prompt, 'info');
             
             showLoading(true);
             showImageStatus('🎨 Inazalisha picha...', 'info');
             
-            const encodedPrompt = encodeURIComponent(prompt + ', professional, vibrant, high quality, 1200x630 facebook post thumbnail');
+            const encodedPrompt = encodeURIComponent(prompt + ', professional, vibrant, high quality');
             const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=630&model=flux&enhance=true`;
             
             const img = new Image();
@@ -453,7 +401,6 @@
                 if (!loaded) {
                     showLoading(false);
                     showImageStatus('⏱️ Inachukua muda. Jaribu tena.', 'error');
-                    debugLog('⏱️ Timeout', 'error');
                 }
             }, 30000);
             
@@ -464,7 +411,7 @@
                 renderCanvas();
                 showLoading(false);
                 showImageStatus('✅ Picha imezalishwa!', 'success');
-                debugLog('✅ Picha imepakuliwa: ' + img.width + 'x' + img.height, 'success');
+                debugLog('✅ Picha imepakuliwa', 'success');
             };
             
             img.onerror = function() {
@@ -476,13 +423,14 @@
                 }
             };
             
+            img.crossOrigin = 'anonymous';
             img.src = imageUrl;
         }
 
         function autoGenerateMrBeast() {
             const postText = document.getElementById('postText').value.trim();
             if (!postText) { showImageStatus('⚠️ Andika post kwanza', 'error'); return; }
-            document.getElementById('aiPrompt').value = postText + ', MrBeast style thumbnail, bold colors, dramatic lighting, eye-catching, professional';
+            document.getElementById('aiPrompt').value = postText + ', MrBeast style thumbnail, bold colors, dramatic lighting, eye-catching';
             generateAIImage();
         }
 
@@ -494,7 +442,6 @@
             if (!postText) { showImageStatus('⚠️ Andika post', 'error'); return; }
             
             showImageStatus('🧠 AI inapendekeza...', 'info');
-            debugLog('🧠 AI inapendekeza text...', 'info');
             try {
                 const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
                     method: 'POST',
@@ -511,11 +458,9 @@
                 if (json.choices?.[0]) {
                     document.getElementById('overlayText').value = json.choices[0].message.content.trim();
                     showImageStatus('✅ AI imependekeza!', 'success');
-                    debugLog('✅ AI imependekeza: ' + json.choices[0].message.content.trim(), 'success');
                 }
             } catch (err) { 
                 showImageStatus('❌ ' + err.message, 'error');
-                debugLog('❌ AI error: ' + err.message, 'error');
             }
         }
 
@@ -531,14 +476,11 @@
             state.conversation.push({ role: 'user', content: msg });
             
             const apiKey = document.getElementById('apiKey').value.trim();
-            if (!apiKey) { addChatBubble('⚠️ Weka API Key kwenye mipangilio.', 'ai'); return; }
+            if (!apiKey) { addChatBubble('⚠️ Weka API Key.', 'ai'); return; }
             
             addChatBubble('⏳ Inafikiri...', 'ai', 'thinking');
             
             try {
-                const context = state.pastPosts.length > 0 ? 
-                    `\n\nKumbukumbu za posts zilizopita:\n${state.pastPosts.slice(0, 10).map((p,i) => `${i+1}. ${p.content}`).join('\n')}` : '';
-                
                 const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
@@ -546,7 +488,7 @@
                         model: 'mistral-small-latest',
                         messages: [{
                             role: 'system',
-                            content: `Wewe ni mtaalamu wa Facebook posts. Andaa posts bila markdown, bila bold, bila asterisks, bila ALL CAPS. Muundo safi. Jibu Kiswahili. ${context}`
+                            content: `Wewe ni mtaalamu wa Facebook posts. Andaa posts bila markdown, bila bold, bila asterisks. Jibu Kiswahili.`
                         }, ...state.conversation]
                     })
                 });
@@ -558,7 +500,6 @@
                     state.conversation.push({ role: 'assistant', content: reply });
                     addChatBubble(reply, 'ai');
                     document.getElementById('postText').value = reply;
-                    saveToLocalStorage();
                 } else {
                     addChatBubble('❌ Jibu halikupatikana.', 'ai');
                 }
@@ -602,7 +543,6 @@
                     state.conversation.push({ role: 'assistant', content: reply });
                     document.getElementById('postText').value = reply;
                     addChatBubble(reply, 'ai');
-                    saveToLocalStorage();
                 }
             } catch (err) { showImageStatus('❌ ' + err.message, 'error'); }
         }
@@ -636,14 +576,12 @@
             document.getElementById('pageId').value = '';
             document.getElementById('pageToken').value = '';
             showSettingsStatus('✅ Page imeongezwa!', 'success');
-            debugLog('📄 Page imeongezwa: ' + (name || 'Page'), 'success');
             showToast('✅ Page imeongezwa!', 'success');
         }
 
         function removePage(index) {
             state.pages.splice(index, 1);
             renderPages();
-            debugLog('📄 Page imefutwa', 'info');
             saveToLocalStorage();
         }
 
@@ -722,22 +660,17 @@
         // ========== SETTINGS ==========
         function saveSettings() {
             const apiKey = document.getElementById('apiKey').value.trim();
-            const pollinationKey = document.getElementById('pollinationKey').value.trim();
             const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
             const supabaseKey = document.getElementById('supabaseKey').value.trim();
             
-            // Save to state
             state.apiKey = apiKey;
-            state.pollinationKey = pollinationKey;
             state.supabaseUrl = supabaseUrl;
             state.supabaseKey = supabaseKey;
             
             showSettingsStatus('✅ Mipangilio imehifadhiwa!', 'success');
-            debugLog('💾 Mipangilio imehifadhiwa', 'success');
             showToast('✅ Mipangilio imehifadhiwa!', 'success');
             saveToLocalStorage();
             
-            // Load past posts from Supabase
             if (supabaseUrl && supabaseKey) {
                 loadPastPosts();
             }
@@ -751,6 +684,35 @@
             setTimeout(() => el.classList.add('hidden'), 3000);
         }
 
+        // ========== LOCAL STORAGE ==========
+        function saveToLocalStorage() {
+            try {
+                const data = {
+                    pages: state.pages,
+                    conversation: state.conversation,
+                    pastPosts: state.pastPosts,
+                    apiKey: document.getElementById('apiKey').value,
+                    supabaseUrl: document.getElementById('supabaseUrl').value,
+                    supabaseKey: document.getElementById('supabaseKey').value
+                };
+                localStorage.setItem('ai_poster_data', JSON.stringify(data));
+            } catch(e) { console.error('Save error:', e); }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const raw = localStorage.getItem('ai_poster_data');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.pages) state.pages = data.pages;
+                if (data.conversation) state.conversation = data.conversation;
+                if (data.pastPosts) state.pastPosts = data.pastPosts;
+                if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
+                if (data.supabaseUrl) document.getElementById('supabaseUrl').value = data.supabaseUrl;
+                if (data.supabaseKey) document.getElementById('supabaseKey').value = data.supabaseKey;
+            } catch(e) { console.error('Load error:', e); }
+        }
+
         // ========== SUPABASE ==========
         async function loadPastPosts() {
             const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
@@ -762,12 +724,9 @@
                 });
                 if (res.ok) {
                     state.pastPosts = await res.json();
-                    debugLog('📚 Posts zilizopita: ' + state.pastPosts.length, 'info');
                     saveToLocalStorage();
                 }
-            } catch(e) { 
-                debugLog('❌ Supabase error: ' + e.message, 'error');
-            }
+            } catch(e) { console.error('Supabase error:', e); }
         }
 
         async function savePostToSupabase(content) {
@@ -786,71 +745,46 @@
                     body: JSON.stringify({ content, created_at: new Date().toISOString() })
                 });
                 state.pastPosts.unshift({ content, created_at: new Date().toISOString() });
-                debugLog('💾 Post imehifadhiwa kwenye Supabase', 'success');
                 saveToLocalStorage();
-            } catch(e) { 
-                debugLog('❌ Save error: ' + e.message, 'error');
-            }
+            } catch(e) { console.error('Save error:', e); }
         }
 
-        async function syncToSupabase() {
-            const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
-            const supabaseKey = document.getElementById('supabaseKey').value.trim();
-            if (!supabaseUrl || !supabaseKey) {
-                showToast('⚠️ Weka Supabase URL na Key kwanza!', 'error');
-                return;
+        // ========== GET CLEAN IMAGE DATA ==========
+        function getCleanImageData() {
+            // Create a clean canvas to avoid tainted canvas issues
+            const cleanCanvas = document.createElement('canvas');
+            cleanCanvas.width = canvas.width;
+            cleanCanvas.height = canvas.height;
+            const cleanCtx = cleanCanvas.getContext('2d');
+            
+            // Draw the current canvas content
+            if (state.canvasImage) {
+                cleanCtx.drawImage(state.canvasImage, 0, 0, cleanCanvas.width, cleanCanvas.height);
             }
             
-            showToast('☁️ Inasawazisha data...', 'info');
-            debugLog('☁️ Inasawazisha data kwa Supabase...', 'info');
+            // Draw image layers
+            state.imageLayers.forEach(l => {
+                cleanCtx.drawImage(l.img, l.x, l.y, l.w, l.h);
+            });
             
-            // Save settings to Supabase
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const pollinationKey = document.getElementById('pollinationKey').value.trim();
+            // Draw text overlays
+            state.textOverlays.forEach(o => {
+                cleanCtx.font = `${o.bold ? '900' : '400'} ${o.size}px DM Sans`;
+                cleanCtx.textAlign = 'center';
+                cleanCtx.textBaseline = 'middle';
+                cleanCtx.shadowColor = 'rgba(0,0,0,0.8)';
+                cleanCtx.shadowBlur = 8;
+                cleanCtx.shadowOffsetX = 3;
+                cleanCtx.shadowOffsetY = 3;
+                cleanCtx.fillStyle = o.color;
+                cleanCtx.fillText(o.text, o.x, o.y);
+                cleanCtx.shadowColor = 'transparent';
+                cleanCtx.strokeStyle = 'rgba(0,0,0,0.5)';
+                cleanCtx.lineWidth = 3;
+                cleanCtx.strokeText(o.text, o.x, o.y);
+            });
             
-            try {
-                // Save config
-                await fetch(supabaseUrl + '/rest/v1/config', {
-                    method: 'POST',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': 'Bearer ' + supabaseKey,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        api_key: apiKey,
-                        pollination_key: pollinationKey,
-                        supabase_url: supabaseUrl,
-                        updated_at: new Date().toISOString()
-                    })
-                });
-                
-                // Save pages
-                for (const page of state.pages) {
-                    await fetch(supabaseUrl + '/rest/v1/pages', {
-                        method: 'POST',
-                        headers: {
-                            'apikey': supabaseKey,
-                            'Authorization': 'Bearer ' + supabaseKey,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({
-                            name: page.name,
-                            page_id: page.id,
-                            access_token: page.token,
-                            updated_at: new Date().toISOString()
-                        })
-                    });
-                }
-                
-                showToast('✅ Data imesawazishwa kwa Supabase!', 'success');
-                debugLog('✅ Data imesawazishwa kwa Supabase!', 'success');
-            } catch(e) {
-                showToast('❌ Imeshindwa kusawazisha: ' + e.message, 'error');
-                debugLog('❌ Sync error: ' + e.message, 'error');
-            }
+            return cleanCanvas;
         }
 
         // ========== PUBLISH ==========
@@ -892,25 +826,41 @@
                 try {
                     debugLog(`📤 Inachapisha kwenye ${page.name}...`, 'info');
                     
-                    // Get image as blob
                     let photoId = null;
-                    if (state.canvasImage) {
-                        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-                        const photoForm = new FormData();
-                        photoForm.append('source', blob, 'post.jpg');
-                        photoForm.append('access_token', page.token);
-                        photoForm.append('published', 'false');
-                        const photoRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
-                            method: 'POST',
-                            body: photoForm
+                    
+                    // Check if there's an image to upload
+                    if (state.canvasImage || state.textOverlays.length > 0 || state.imageLayers.length > 0) {
+                        // Use clean canvas to avoid tainted canvas issues
+                        const cleanCanvas = getCleanImageData();
+                        
+                        // Convert to blob
+                        const blob = await new Promise(resolve => {
+                            cleanCanvas.toBlob(resolve, 'image/jpeg', 0.9);
                         });
-                        const photoJson = await photoRes.json();
-                        if (photoJson.id) {
-                            photoId = photoJson.id;
-                            debugLog(`📸 Picha imepakiwa: ${photoId}`, 'success');
+                        
+                        if (blob) {
+                            // Upload to Facebook
+                            const photoForm = new FormData();
+                            photoForm.append('source', blob, 'post.jpg');
+                            photoForm.append('access_token', page.token);
+                            photoForm.append('published', 'false');
+                            
+                            const photoRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+                                method: 'POST',
+                                body: photoForm
+                            });
+                            const photoJson = await photoRes.json();
+                            
+                            if (photoJson.id) {
+                                photoId = photoJson.id;
+                                debugLog(`📸 Picha imepakiwa: ${photoId}`, 'success');
+                            } else {
+                                debugLog(`❌ Picha imeshindwa kupakiwa: ${photoJson.error?.message}`, 'error');
+                            }
                         }
                     }
                     
+                    // Create post
                     const feedForm = new FormData();
                     feedForm.append('message', postText);
                     feedForm.append('access_token', page.token);
@@ -919,7 +869,8 @@
                     }
                     
                     const now = new Date();
-                    if (schedule > now) {
+                    const minScheduleTime = new Date(now.getTime() + 10 * 60000);
+                    if (schedule >= minScheduleTime) {
                         feedForm.append('scheduled_publish_time', Math.floor(schedule.getTime() / 1000));
                         feedForm.append('published', 'false');
                         debugLog(`⏰ Imeratibiwa: ${schedule.toLocaleString()}`, 'info');
@@ -934,13 +885,17 @@
                     if (feedJson.id || feedJson.post_id) {
                         successCount++;
                         debugLog(`✅ Imechapishwa kwenye ${page.name}`, 'success');
+                        showToast(`✅ Imechapishwa kwenye ${page.name}!`, 'success');
                     } else {
-                        errors.push(`${page.name}: ${feedJson.error?.message || 'Imeshindwa'}`);
-                        debugLog(`❌ Imeshindwa kwenye ${page.name}: ${feedJson.error?.message}`, 'error');
+                        const errorMsg = feedJson.error?.message || 'Imeshindwa';
+                        errors.push(`${page.name}: ${errorMsg}`);
+                        debugLog(`❌ Imeshindwa kwenye ${page.name}: ${errorMsg}`, 'error');
+                        showToast(`❌ ${page.name}: ${errorMsg}`, 'error');
                     }
                 } catch (err) {
                     errors.push(`${page.name}: ${err.message}`);
                     debugLog(`❌ Kosa kwenye ${page.name}: ${err.message}`, 'error');
+                    showToast(`❌ ${page.name}: ${err.message}`, 'error');
                 }
             }
             
@@ -950,7 +905,6 @@
             if (successCount > 0) {
                 showPublishStatus(`✅ Imechapishwa ${successCount}/${toPublish.length}!`, 'success');
                 await savePostToSupabase(postText);
-                showToast(`✅ Imechapishwa ${successCount}/${toPublish.length}!`, 'success');
             }
             if (errors.length > 0) {
                 setTimeout(() => showPublishStatus(`⚠️ ${errors.join(' | ')}`, 'error'), 2000);
@@ -1078,33 +1032,16 @@
         }, { passive: false });
 
         // ========== INIT ==========
-        // Load from localStorage first
-        const hasLocalData = loadFromLocalStorage();
-        
-        // Load from Supabase if configured
-        setTimeout(() => {
-            const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
-            const supabaseKey = document.getElementById('supabaseKey').value.trim();
-            if (supabaseUrl && supabaseKey) {
-                loadPastPosts();
-            }
-        }, 500);
-        
+        loadFromLocalStorage();
         renderCanvas();
         renderPages();
         setTool('select');
         
         debugLog('🚀 AI Poster Pro imeanzishwa!', 'success');
         debugLog('💾 Data inahifadhiwa kwenye localStorage', 'info');
-        debugLog('☁️ Supabase imewashwa kwa sync', 'info');
-        
-        if (hasLocalData) {
-            showToast('📂 Data imepakiwa kutoka localStorage!', 'success');
-        }
         
         console.log('🌿 AI Poster Pro imeanzishwa!');
-        console.log('✅ Data inahifadhiwa kwenye localStorage na Supabase');
-        console.log('💡 Taarifa zote zinabaki hata ukifunga browser');
+        console.log('✅ Tatizo la tainted canvas limetatuliwa!');
     </script>
 </body>
 </html>
