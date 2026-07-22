@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 AI Facebook Poster + Picha</title>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&family=Inter:wght@400;600;700&family=Roboto:wght@400;500;700&family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'DM Sans', sans-serif; background: linear-gradient(135deg, #0f172a, #064e3b); min-height: 100vh; padding: 16px; }
@@ -18,12 +18,13 @@
         .btn-danger { background: rgba(220,38,38,0.6); color: white; padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s; font-size: 13px; }
         .btn-danger:hover { background: rgba(220,38,38,0.8); }
         input, textarea, select { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: white; width: 100%; font-size: 14px; }
-        input:focus, textarea:focus { outline: none; border-color: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.1); }
         input[type="color"] { padding: 0; height: 38px; cursor: pointer; width: 50px; }
         input[type="range"] { padding: 0; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #4ade80; cursor: pointer; }
-        .canvas-container { position: relative; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.3); min-height: 300px; }
-        .canvas-container canvas { width: 100%; display: block; cursor: crosshair; }
+        .canvas-scroll { overflow: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .canvas-container { position: relative; border-radius: 12px; background: rgba(0,0,0,0.3); min-height: 300px; width: 100%; max-width: 100%; }
+        .canvas-container canvas { display: block; touch-action: none; }
         .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; margin: 4px 0; white-space: pre-wrap; word-wrap: break-word; }
         .chat-user { background: #16a34a; color: white; align-self: flex-end; }
         .chat-ai { background: rgba(255,255,255,0.08); color: #e5e7eb; align-self: flex-start; }
@@ -32,6 +33,7 @@
         .status-success { color: #4ade80; }
         .status-error { color: #f87171; }
         .status-info { color: #60a5fa; }
+        .status-warn { color: #fbbf24; }
         .loading-spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #4ade80; border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; margin: 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .progress-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin-top: 6px; }
@@ -48,17 +50,26 @@
         .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; z-index: 9999; border-left: 4px solid #4ade80; max-width: 90%; animation: slideIn 0.3s ease; }
         .toast-error { border-left-color: #f87171; }
         .toast-success { border-left-color: #4ade80; }
+        .toast-warn { border-left-color: #fbbf24; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast.hidden { display: none; }
-        @media (max-width: 640px) { .schedule-grid { grid-template-columns: 1fr; } body { padding: 10px; } }
+        .panel-title { color: #cbd5e1; font-size: 12px; letter-spacing: 0.02em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+        .row-2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+        .row-3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+        .small-label { color: #9ca3af; font-size: 11px; margin-bottom: 2px; display: block; }
+        @media (max-width: 640px) {
+            .schedule-grid, .row-2, .row-3 { grid-template-columns: 1fr; }
+            body { padding: 10px; }
+            .canvas-scroll { overflow-x: auto; }
+        }
     </style>
 </head>
 <body>
     <div id="toast" class="toast hidden"></div>
-    <div class="max-w-3xl mx-auto space-y-4">
+    <div class="max-w-6xl mx-auto space-y-4">
         <header class="text-center fade-up">
             <h1 class="text-3xl md:text-4xl font-black" style="color: #4ade80;">🌿 AI Facebook Poster + Picha</h1>
-            <p class="text-gray-400 text-sm md:text-base mt-1">Zalisha picha za AI • Chapisha kwenye Facebook Pages</p>
+            <p class="text-gray-400 text-sm md:text-base mt-1">Zalisha picha za AI • Hariri kitaalamu • Chapisha kwenye Facebook Pages</p>
         </header>
 
         <details class="glass p-4" open>
@@ -101,19 +112,32 @@
         </section>
 
         <section class="glass p-4">
-            <h2 class="text-white font-bold text-center text-lg">🖼️ Picha — AI Generate, Draw &amp; Edit</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                <div><label class="text-gray-300 text-sm block mb-1">📁 Pakia picha</label><input type="file" id="imageUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm"></div>
+            <h2 class="text-white font-bold text-center text-lg">🖼️ Picha — AI Generate, Draw &amp; Full Edit</h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
+                <div>
+                    <label class="text-gray-300 text-sm block mb-1">📁 Pakia picha kuu</label>
+                    <input type="file" id="imageUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm">
+                </div>
                 <div class="space-y-2">
                     <label class="text-gray-300 text-sm block mb-1">🤖 Zalisha Picha</label>
+                    <div class="row-2">
+                        <input type="text" id="aiPrompt" placeholder="Eleza picha unayotaka..." class="text-sm">
+                        <select id="aiStyle">
+                            <option value="product">Product</option>
+                            <option value="business">Business Advert</option>
+                            <option value="cinematic">Cinematic</option>
+                            <option value="thumbnail">Social Thumbnail</option>
+                        </select>
+                    </div>
+                    <input type="text" id="aiNegativePrompt" placeholder="Negative prompt (mf: blurry, watermark, low quality)">
                     <div class="flex gap-2">
-                        <input type="text" id="aiPrompt" placeholder="Eleza picha unayotaka..." class="flex-1 text-sm">
-                        <button onclick="generateAIImage()" class="btn-primary px-3 text-sm" style="background:linear-gradient(135deg,#9333ea,#db2777);">✨</button>
-                        <button onclick="autoGenerateMrBeast()" class="btn-primary px-3 text-sm" style="background:linear-gradient(135deg,#d97706,#ea580c);">🎬</button>
+                        <button onclick="generateAIImage()" class="btn-primary px-3 text-sm flex-1" style="background:linear-gradient(135deg,#9333ea,#db2777);">✨ Zalisha</button>
+                        <button onclick="autoGenerateMrBeast()" class="btn-primary px-3 text-sm" style="background:linear-gradient(135deg,#d97706,#ea580c);">🎬 Auto</button>
                     </div>
                 </div>
             </div>
+
             <div id="imageStatus" class="text-center text-sm hidden mt-2"></div>
             <div id="loadingIndicator" class="hidden text-center">
                 <div class="loading-spinner"></div>
@@ -123,35 +147,135 @@
 
             <div id="debugBox" class="debug-box"></div>
 
-            <div class="flex flex-wrap gap-1 mt-3">
-                <button onclick="setTool('select')" id="toolSelect" class="btn-tool active" style="background:rgba(255,255,255,0.08);color:#aaa;padding:6px 12px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:all 0.3s;font-size:12px;">🖱️ Select</button>
-                <button onclick="setTool('draw')" id="toolDraw" class="btn-tool" style="background:rgba(255,255,255,0.08);color:#aaa;padding:6px 12px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:all 0.3s;font-size:12px;">✏️ Draw</button>
-                <button onclick="setTool('erase')" id="toolErase" class="btn-tool" style="background:rgba(255,255,255,0.08);color:#aaa;padding:6px 12px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:all 0.3s;font-size:12px;">🧹 Erase</button>
-                <button onclick="clearCanvas()" class="btn-danger">🗑️ Clear</button>
-                <input type="color" id="drawColor" value="#ff0000">
-                <input type="range" id="drawSize" min="1" max="20" value="3" class="w-16">
-                <span class="text-gray-400 text-xs flex items-center" id="drawSizeLabel">3</span>
-            </div>
-
-            <div class="border border-white/10 rounded-lg p-3 mt-3">
-                <label class="text-gray-300 text-sm block font-semibold">✍️ Ongeza Text</label>
-                <input type="text" id="overlayText" placeholder="Andika text hapa..." class="mb-2">
-                <div class="flex flex-wrap gap-2 items-center">
-                    <input type="color" id="textColor" value="#ffffff" class="w-8 h-8">
-                    <input type="range" id="textSize" min="12" max="120" value="48" class="w-20">
-                    <span class="text-gray-400 text-xs" id="textSizeLabel">48</span>
-                    <label class="flex items-center gap-1 text-xs text-gray-400"><input type="checkbox" id="textBold" checked> Bold</label>
-                    <button onclick="addTextOverlay()" class="btn-primary text-sm px-3" style="background:#2563eb;">➕ Ongeza</button>
+            <div class="border border-white/10 rounded-lg p-3 mt-3 space-y-2">
+                <div class="panel-title">Zana Kuu</div>
+                <div class="flex flex-wrap gap-1">
+                    <button onclick="setTool('select')" id="toolSelect" class="btn-tool" style="background:#4ade80;color:#0f172a;padding:6px 12px;border-radius:8px;border:1px solid #4ade80;cursor:pointer;transition:all 0.3s;font-size:12px;">🖱️ Select</button>
+                    <button onclick="setTool('draw')" id="toolDraw" class="btn-tool" style="background:rgba(255,255,255,0.08);color:#aaa;padding:6px 12px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:all 0.3s;font-size:12px;">✏️ Draw</button>
+                    <button onclick="setTool('erase')" id="toolErase" class="btn-tool" style="background:rgba(255,255,255,0.08);color:#aaa;padding:6px 12px;border-radius:8px;border:1px solid transparent;cursor:pointer;transition:all 0.3s;font-size:12px;">🧽 Erase</button>
+                    <button onclick="undoAction()" class="btn-secondary">↩️ Undo</button>
+                    <button onclick="redoAction()" class="btn-secondary">↪️ Redo</button>
+                    <button onclick="clearCanvas()" class="btn-danger">🗑️ Clear</button>
+                </div>
+                <div class="row-3">
+                    <div><label class="small-label">Rangi ya kalamu</label><input type="color" id="drawColor" value="#ff0000"></div>
+                    <div><label class="small-label">Ukubwa wa kalamu</label><input type="range" id="drawSize" min="1" max="50" value="3"></div>
+                    <div class="text-gray-400 text-xs flex items-end" id="drawSizeLabel">3</div>
                 </div>
             </div>
 
-            <div class="border border-white/10 rounded-lg p-3 mt-3">
-                <label class="text-gray-300 text-sm block font-semibold">📷 Ongeza picha juu</label>
-                <input type="file" id="layerUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm">
+            <div class="border border-white/10 rounded-lg p-3 mt-3 space-y-2">
+                <div class="panel-title">Base image adjustments (non-destructive)</div>
+                <div class="row-3">
+                    <div><label class="small-label">Brightness</label><input id="adjBrightness" type="range" min="0" max="200" value="100"></div>
+                    <div><label class="small-label">Contrast</label><input id="adjContrast" type="range" min="0" max="200" value="100"></div>
+                    <div><label class="small-label">Saturation</label><input id="adjSaturation" type="range" min="0" max="200" value="100"></div>
+                    <div><label class="small-label">Hue Rotate</label><input id="adjHue" type="range" min="-180" max="180" value="0"></div>
+                    <div><label class="small-label">Blur</label><input id="adjBlur" type="range" min="0" max="20" step="0.1" value="0"></div>
+                    <div><label class="small-label">Grayscale</label><input id="adjGray" type="range" min="0" max="100" value="0"></div>
+                    <div><label class="small-label">Sepia</label><input id="adjSepia" type="range" min="0" max="100" value="0"></div>
+                    <div><label class="small-label">Opacity</label><input id="adjOpacity" type="range" min="0" max="100" value="100"></div>
+                    <div><label class="small-label">Rotation°</label><input id="adjRotation" type="range" min="-180" max="180" value="0"></div>
+                </div>
+                <div class="row-3">
+                    <div>
+                        <label class="small-label">Fit mode</label>
+                        <select id="fitMode">
+                            <option value="cover">Cover</option>
+                            <option value="contain">Contain</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end"><button onclick="zoomCanvas(1.1)" class="btn-secondary w-full">🔍＋ Zoom</button></div>
+                    <div class="flex items-end"><button onclick="zoomCanvas(0.9)" class="btn-secondary w-full">🔎－ Zoom</button></div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="resetAdjustments()" class="btn-secondary flex-1">♻️ Reset Adjustments</button>
+                    <button onclick="resetBaseTransform()" class="btn-secondary flex-1">↺ Reset Zoom/Pan</button>
+                </div>
             </div>
 
-            <div class="canvas-container mt-3">
-                <canvas id="mainCanvas" width="1200" height="630"></canvas>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
+                <div class="border border-white/10 rounded-lg p-3 space-y-2">
+                    <div class="panel-title">✍️ Text editor (ikiwemo 3D)</div>
+                    <input type="text" id="overlayText" placeholder="Andika text hapa...">
+                    <div class="row-3">
+                        <div><label class="small-label">Rangi</label><input type="color" id="textColor" value="#ffffff"></div>
+                        <div><label class="small-label">Outline</label><input type="color" id="textStrokeColor" value="#000000"></div>
+                        <div><label class="small-label">3D Color</label><input type="color" id="text3dColor" value="#222222"></div>
+                    </div>
+                    <div class="row-3">
+                        <div><label class="small-label">Size</label><input type="range" id="textSize" min="12" max="160" value="48"></div>
+                        <div><label class="small-label">Spacing</label><input type="range" id="textLetterSpacing" min="-5" max="30" value="0"></div>
+                        <div><label class="small-label">Rotate°</label><input type="range" id="textRotation" min="-180" max="180" value="0"></div>
+                    </div>
+                    <div class="row-3">
+                        <div><label class="small-label">Stroke width</label><input type="range" id="textStrokeWidth" min="0" max="15" value="2"></div>
+                        <div><label class="small-label">Shadow blur</label><input type="range" id="textShadowBlur" min="0" max="40" value="10"></div>
+                        <div><label class="small-label">3D depth</label><input type="range" id="text3dDepth" min="0" max="30" value="0"></div>
+                    </div>
+                    <div class="row-3">
+                        <div>
+                            <label class="small-label">Font</label>
+                            <select id="textFontFamily">
+                                <option value="DM Sans">DM Sans</option>
+                                <option value="Inter">Inter</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Georgia">Georgia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="small-label">Align</label>
+                            <select id="textAlign">
+                                <option value="center">Center</option>
+                                <option value="left">Left</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="small-label">3D direction</label>
+                            <select id="text3dDirection">
+                                <option value="down-right">Down Right</option>
+                                <option value="down-left">Down Left</option>
+                                <option value="up-right">Up Right</option>
+                                <option value="up-left">Up Left</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row-3">
+                        <label class="flex items-center gap-1 text-xs text-gray-400"><input type="checkbox" id="textBold" checked> Bold</label>
+                        <label class="flex items-center gap-1 text-xs text-gray-400"><input type="checkbox" id="textItalic"> Italic</label>
+                        <div class="text-xs text-gray-400 flex items-center" id="textSizeLabel">48</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="addOrUpdateTextOverlay()" class="btn-primary flex-1" style="background:#2563eb;">➕/💾 Ongeza au Update</button>
+                        <button onclick="deleteSelectedLayer()" class="btn-danger">🗑️ Futa Layer</button>
+                    </div>
+                </div>
+
+                <div class="border border-white/10 rounded-lg p-3 space-y-2">
+                    <div class="panel-title">📷 Layers & workflow</div>
+                    <input type="file" id="layerUpload" accept="image/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm">
+                    <div class="row-2">
+                        <button onclick="moveLayerOrder(1)" class="btn-secondary">⬆️ Mbele</button>
+                        <button onclick="moveLayerOrder(-1)" class="btn-secondary">⬇️ Nyuma</button>
+                    </div>
+                    <div class="row-3">
+                        <button onclick="setSelectedImageScale(1.1)" class="btn-secondary">↔️ Panua</button>
+                        <button onclick="setSelectedImageScale(0.9)" class="btn-secondary">↕️ Punguza</button>
+                        <button onclick="rotateSelectedLayer(10)" class="btn-secondary">🔄 Rotate</button>
+                    </div>
+                    <div class="text-xs text-gray-400" id="selectedLayerInfo">Hakuna layer iliyochaguliwa</div>
+                    <div id="layersList" class="space-y-1 max-h-40 overflow-y-auto"></div>
+                    <p class="text-xs text-gray-500">Tip: Select mode kisha gusa/bonyeza layer. Kwa image layer: drag kusogeza, handles kubadili size, duara la juu ku-rotate.</p>
+                </div>
+            </div>
+
+            <div class="canvas-scroll mt-3">
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="mainCanvas" width="1200" height="630"></canvas>
+                </div>
             </div>
 
             <div class="flex flex-wrap gap-2 mt-3">
@@ -171,36 +295,74 @@
 
     <script>
         // ========== STATE ==========
-        let state = {
+        const CANVAS_W = 1200;
+        const CANVAS_H = 630;
+        const TEXT_FALLBACK = 'DM Sans, Inter, Roboto, Arial, sans-serif';
+        const HISTORY_LIMIT = 60;
+
+        const STYLE_PRESETS = {
+            product: 'product photo, clean studio lighting, realistic texture, premium commercial look',
+            business: 'business advertisement, trustworthy brand mood, sharp details, modern marketing composition',
+            cinematic: 'cinematic composition, dramatic lighting, rich colors, high dynamic range, filmic tone',
+            thumbnail: 'social media thumbnail, high contrast, bold composition, eye-catching subject focus'
+        };
+
+        const state = {
             pages: [],
             apiKey: '',
             supabaseUrl: '',
             supabaseKey: '',
-            canvasImage: null,
-            textOverlays: [],
-            imageLayers: [],
-            drawingPaths: [],
-            currentTool: 'select',
-            isDrawing: false,
-            currentPath: null,
             conversation: [],
-            pastPosts: []
+            pastPosts: [],
+            currentTool: 'select',
+            canvasImage: null,
+            canvasImageSrc: null,
+            canvasImageRemote: false,
+            canvasImageExportSafe: true,
+            baseTransform: { x: 0, y: 0, scale: 1, rotation: 0, fitMode: 'cover' },
+            adjustments: {
+                brightness: 100,
+                contrast: 100,
+                saturation: 100,
+                hue: 0,
+                blur: 0,
+                grayscale: 0,
+                sepia: 0,
+                opacity: 100,
+                rotation: 0
+            },
+            layers: [],
+            drawingPaths: [],
+            selectedLayerId: null,
+            isPointerDown: false,
+            pointerAction: null,
+            pointerStart: null,
+            currentPath: null,
+            history: [],
+            historyIndex: -1,
+            loadingInterval: null,
+            countdownInterval: null
         };
+
+        const imageCache = new Map();
+        let layerCounter = 0;
 
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
 
-        // ========== DEBUG ==========
+        // ========== HELPERS ==========
         function debugLog(msg, type = 'info') {
             const box = document.getElementById('debugBox');
             box.style.display = 'block';
             const time = new Date().toLocaleTimeString();
-            box.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${time}] ${msg}`;
+            box.appendChild(line);
             box.scrollTop = box.scrollHeight;
             console.log(`[${type.toUpperCase()}]`, msg);
         }
 
-        // ========== TOAST ==========
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
@@ -209,7 +371,28 @@
             setTimeout(() => toast.classList.add('hidden'), 4000);
         }
 
-        // ========== TOOLS ==========
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
+        }
+
+        function updateSelectedLayerInfo() {
+            const info = document.getElementById('selectedLayerInfo');
+            if (!state.selectedLayerId) {
+                info.textContent = 'Hakuna layer iliyochaguliwa';
+                return;
+            }
+            const layer = state.layers.find(l => l.id === state.selectedLayerId);
+            if (!layer) {
+                info.textContent = 'Hakuna layer iliyochaguliwa';
+                return;
+            }
+            if (layer.type === 'text') {
+                info.textContent = `Selected: Text — "${layer.text.slice(0, 24)}${layer.text.length > 24 ? '...' : ''}"`;
+            } else {
+                info.textContent = `Selected: Image layer (${Math.round(layer.w)}×${Math.round(layer.h)})`;
+            }
+        }
+
         function setTool(tool) {
             state.currentTool = tool;
             document.querySelectorAll('.btn-tool').forEach(b => {
@@ -218,8 +401,8 @@
                 b.style.borderColor = 'transparent';
             });
             const map = { select: 'toolSelect', draw: 'toolDraw', erase: 'toolErase' };
-            if (map[tool]) {
-                const el = document.getElementById(map[tool]);
+            const el = document.getElementById(map[tool]);
+            if (el) {
                 el.style.background = '#4ade80';
                 el.style.color = '#0f172a';
                 el.style.borderColor = '#4ade80';
@@ -227,137 +410,398 @@
             canvas.style.cursor = tool === 'select' ? 'grab' : 'crosshair';
         }
 
-        document.getElementById('drawSize').addEventListener('input', function() {
-            document.getElementById('drawSizeLabel').textContent = this.value;
-        });
-        document.getElementById('textSize').addEventListener('input', function() {
-            document.getElementById('textSizeLabel').textContent = this.value;
-        });
+        function buildFilterString() {
+            const a = state.adjustments;
+            return `brightness(${a.brightness}%) contrast(${a.contrast}%) saturate(${a.saturation}%) hue-rotate(${a.hue}deg) blur(${a.blur}px) grayscale(${a.grayscale}%) sepia(${a.sepia}%) opacity(${a.opacity}%)`;
+        }
 
-        // ========== RENDER ==========
-        function renderCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (state.canvasImage) {
-                ctx.drawImage(state.canvasImage, 0, 0, canvas.width, canvas.height);
-            } else {
-                const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                g.addColorStop(0, '#1a1a2e');
-                g.addColorStop(1, '#16213e');
-                ctx.fillStyle = g;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#555';
-                ctx.font = '26px DM Sans';
-                ctx.textAlign = 'center';
-                ctx.fillText('📸 Pakia au zalisha picha', canvas.width/2, canvas.height/2);
+        function loadImage(src, crossOrigin = false) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                if (crossOrigin) img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Imeshindwa kupakia picha'));
+                img.src = src;
+            });
+        }
+
+        function ensureImageFromCache(src, crossOrigin = false) {
+            if (!src) return Promise.resolve(null);
+            if (imageCache.has(src)) return Promise.resolve(imageCache.get(src));
+            return loadImage(src, crossOrigin).then(img => {
+                imageCache.set(src, img);
+                return img;
+            });
+        }
+
+        function layerCloneForHistory(layer) {
+            const base = { ...layer };
+            if (layer.type === 'image') {
+                base.img = null;
+                base.src = layer.src || null;
+            }
+            return base;
+        }
+
+        function serializeStateForHistory() {
+            return {
+                canvasImageSrc: state.canvasImageSrc,
+                canvasImageRemote: state.canvasImageRemote,
+                canvasImageExportSafe: state.canvasImageExportSafe,
+                baseTransform: { ...state.baseTransform },
+                adjustments: { ...state.adjustments },
+                drawingPaths: state.drawingPaths.map(path => ({
+                    mode: path.mode,
+                    color: path.color,
+                    size: path.size,
+                    points: path.points.map(p => ({ x: p.x, y: p.y }))
+                })),
+                layers: state.layers.map(layerCloneForHistory),
+                selectedLayerId: state.selectedLayerId,
+                layerCounter
+            };
+        }
+
+        async function restoreFromSnapshot(snapshot) {
+            state.canvasImageSrc = snapshot.canvasImageSrc || null;
+            state.canvasImageRemote = !!snapshot.canvasImageRemote;
+            state.canvasImageExportSafe = snapshot.canvasImageExportSafe !== false;
+            state.baseTransform = { ...snapshot.baseTransform };
+            state.adjustments = { ...snapshot.adjustments };
+            state.drawingPaths = snapshot.drawingPaths.map(path => ({
+                ...path,
+                points: path.points.map(p => ({ x: p.x, y: p.y }))
+            }));
+
+            state.canvasImage = null;
+            if (state.canvasImageSrc) {
+                try {
+                    state.canvasImage = await ensureImageFromCache(state.canvasImageSrc, state.canvasImageRemote);
+                } catch (err) {
+                    debugLog('⚠️ Imeshindwa kurejesha base image: ' + err.message, 'warn');
+                }
             }
 
-            state.imageLayers.forEach(l => {
-                ctx.drawImage(l.img, l.x, l.y, l.w, l.h);
-            });
-
-            state.drawingPaths.forEach(path => {
-                if (path.points.length < 2) return;
-                ctx.beginPath();
-                ctx.strokeStyle = path.color;
-                ctx.lineWidth = path.size;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.moveTo(path.points[0].x, path.points[0].y);
-                for (let i = 1; i < path.points.length; i++) {
-                    ctx.lineTo(path.points[i].x, path.points[i].y);
+            const restoredLayers = [];
+            for (const layer of snapshot.layers) {
+                if (layer.type === 'image') {
+                    let img = null;
+                    if (layer.src) {
+                        try {
+                            img = await ensureImageFromCache(layer.src, layer.remote === true);
+                        } catch (err) {
+                            debugLog('⚠️ Imeshindwa kurejesha image layer', 'warn');
+                        }
+                    }
+                    restoredLayers.push({ ...layer, img });
+                } else {
+                    restoredLayers.push({ ...layer });
                 }
-                ctx.stroke();
-            });
+            }
 
-            state.textOverlays.forEach(o => {
-                ctx.save();
-                ctx.font = `${o.bold ? '900' : '400'} ${o.size}px DM Sans`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                ctx.shadowBlur = 8;
-                ctx.shadowOffsetX = 3;
-                ctx.shadowOffsetY = 3;
-                ctx.fillStyle = o.color;
-                ctx.fillText(o.text, o.x, o.y);
-                ctx.shadowColor = 'transparent';
-                ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-                ctx.lineWidth = 3;
-                ctx.strokeText(o.text, o.x, o.y);
-                ctx.restore();
-            });
-        }
-
-        // ========== IMAGE UPLOAD ==========
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const img = new Image();
-                img.onload = function() {
-                    state.canvasImage = img;
-                    renderCanvas();
-                    showImageStatus('✅ Picha imepakiwa!', 'success');
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById('layerUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const img = new Image();
-                img.onload = function() {
-                    state.imageLayers.push({ img: img, x: 50, y: 50, w: 250, h: 180 });
-                    renderCanvas();
-                    showImageStatus('✅ Picha imeongezwa!', 'success');
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // ========== TEXT OVERLAY ==========
-        function addTextOverlay() {
-            const text = document.getElementById('overlayText').value.trim();
-            if (!text) { showImageStatus('⚠️ Andika maandishi', 'error'); return; }
-            state.textOverlays.push({
-                text: text,
-                color: document.getElementById('textColor').value,
-                size: parseInt(document.getElementById('textSize').value),
-                bold: document.getElementById('textBold').checked,
-                x: canvas.width / 2,
-                y: canvas.height / 2
-            });
+            state.layers = restoredLayers;
+            state.selectedLayerId = snapshot.selectedLayerId;
+            layerCounter = snapshot.layerCounter || layerCounter;
+            syncAdjustmentInputs();
+            syncFitModeInput();
+            renderLayersList();
+            updateSelectedLayerInfo();
             renderCanvas();
-            document.getElementById('overlayText').value = '';
-            showImageStatus('✅ Maandishi yameongezwa!', 'success');
         }
 
-        function clearCanvas() {
-            state.canvasImage = null;
-            state.textOverlays = [];
-            state.imageLayers = [];
-            state.drawingPaths = [];
-            renderCanvas();
-            showImageStatus('🗑️ Picha imefutwa', 'info');
+        function pushHistory() {
+            const snapshot = serializeStateForHistory();
+            if (state.historyIndex < state.history.length - 1) {
+                state.history = state.history.slice(0, state.historyIndex + 1);
+            }
+            state.history.push(snapshot);
+            if (state.history.length > HISTORY_LIMIT) state.history.shift();
+            state.historyIndex = state.history.length - 1;
         }
 
-        function downloadImage() {
-            const link = document.createElement('a');
-            link.download = 'post-image.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+        async function undoAction() {
+            if (state.historyIndex <= 0) return;
+            state.historyIndex -= 1;
+            await restoreFromSnapshot(state.history[state.historyIndex]);
+            showImageStatus('↩️ Undo', 'info');
         }
 
-        function editPost() {
-            document.getElementById('postText').focus();
-            document.getElementById('postText').select();
+        async function redoAction() {
+            if (state.historyIndex >= state.history.length - 1) return;
+            state.historyIndex += 1;
+            await restoreFromSnapshot(state.history[state.historyIndex]);
+            showImageStatus('↪️ Redo', 'info');
+        }
+
+        // ========== RENDER ==========
+        function getBaseImageDrawRect() {
+            if (!state.canvasImage) return { x: 0, y: 0, w: CANVAS_W, h: CANVAS_H };
+            const img = state.canvasImage;
+            const canvasRatio = CANVAS_W / CANVAS_H;
+            const imgRatio = img.width / img.height;
+            let w, h;
+            if (state.baseTransform.fitMode === 'contain') {
+                if (imgRatio > canvasRatio) {
+                    w = CANVAS_W;
+                    h = w / imgRatio;
+                } else {
+                    h = CANVAS_H;
+                    w = h * imgRatio;
+                }
+            } else {
+                if (imgRatio > canvasRatio) {
+                    h = CANVAS_H;
+                    w = h * imgRatio;
+                } else {
+                    w = CANVAS_W;
+                    h = w / imgRatio;
+                }
+            }
+            return { x: (CANVAS_W - w) / 2, y: (CANVAS_H - h) / 2, w, h };
+        }
+
+        function drawBaseImage(targetCtx) {
+            if (!state.canvasImage) {
+                const g = targetCtx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+                g.addColorStop(0, '#1a1a2e');
+                g.addColorStop(1, '#16213e');
+                targetCtx.fillStyle = g;
+                targetCtx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                targetCtx.fillStyle = '#7f8ea3';
+                targetCtx.font = '26px DM Sans';
+                targetCtx.textAlign = 'center';
+                targetCtx.fillText('📸 Pakia au zalisha picha', CANVAS_W / 2, CANVAS_H / 2);
+                return;
+            }
+
+            const rect = getBaseImageDrawRect();
+            targetCtx.save();
+            targetCtx.filter = buildFilterString();
+            targetCtx.translate(CANVAS_W / 2 + state.baseTransform.x, CANVAS_H / 2 + state.baseTransform.y);
+            const finalRotation = (state.baseTransform.rotation + state.adjustments.rotation) * Math.PI / 180;
+            targetCtx.rotate(finalRotation);
+            targetCtx.scale(state.baseTransform.scale, state.baseTransform.scale);
+            targetCtx.drawImage(state.canvasImage, rect.x - CANVAS_W / 2, rect.y - CANVAS_H / 2, rect.w, rect.h);
+            targetCtx.restore();
+        }
+
+        function getTextLineMetrics(targetCtx, textLayer) {
+            const lines = (textLayer.text || '').split('\n');
+            const lineHeight = textLayer.size * 1.15;
+            const widths = [];
+            for (const line of lines) {
+                let width = 0;
+                for (let i = 0; i < line.length; i++) {
+                    width += targetCtx.measureText(line[i]).width;
+                    if (i < line.length - 1) width += textLayer.letterSpacing;
+                }
+                widths.push(width);
+            }
+            const maxWidth = widths.length ? Math.max(...widths) : 0;
+            return { lines, widths, maxWidth, lineHeight, totalHeight: lines.length * lineHeight };
+        }
+
+        function drawSpacedText(targetCtx, text, x, y, align, letterSpacing) {
+            const chars = text.split('');
+            const widths = chars.map(ch => targetCtx.measureText(ch).width);
+            const total = widths.reduce((a, b) => a + b, 0) + Math.max(0, chars.length - 1) * letterSpacing;
+            let cursor = x;
+            if (align === 'center') cursor = x - total / 2;
+            if (align === 'right') cursor = x - total;
+            for (let i = 0; i < chars.length; i++) {
+                targetCtx.fillText(chars[i], cursor, y);
+                cursor += widths[i] + letterSpacing;
+            }
+        }
+
+        function strokeSpacedText(targetCtx, text, x, y, align, letterSpacing) {
+            const chars = text.split('');
+            const widths = chars.map(ch => targetCtx.measureText(ch).width);
+            const total = widths.reduce((a, b) => a + b, 0) + Math.max(0, chars.length - 1) * letterSpacing;
+            let cursor = x;
+            if (align === 'center') cursor = x - total / 2;
+            if (align === 'right') cursor = x - total;
+            for (let i = 0; i < chars.length; i++) {
+                targetCtx.strokeText(chars[i], cursor, y);
+                cursor += widths[i] + letterSpacing;
+            }
+        }
+
+        function get3dDirectionVector(direction) {
+            switch (direction) {
+                case 'down-left': return { x: -1, y: 1 };
+                case 'up-right': return { x: 1, y: -1 };
+                case 'up-left': return { x: -1, y: -1 };
+                default: return { x: 1, y: 1 };
+            }
+        }
+
+        function drawTextLayer(targetCtx, layer) {
+            targetCtx.save();
+            const fontStyle = `${layer.italic ? 'italic' : 'normal'} ${layer.bold ? '700' : '400'} ${layer.size}px ${layer.fontFamily || TEXT_FALLBACK}`;
+            targetCtx.font = fontStyle;
+            targetCtx.textBaseline = 'middle';
+            targetCtx.textAlign = 'left';
+            targetCtx.translate(layer.x, layer.y);
+            targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
+
+            const metrics = getTextLineMetrics(targetCtx, layer);
+            const startY = -metrics.totalHeight / 2 + metrics.lineHeight / 2;
+            const dir = get3dDirectionVector(layer.extrudeDirection || 'down-right');
+
+            if (layer.extrudeDepth > 0) {
+                targetCtx.fillStyle = layer.extrudeColor || '#222222';
+                for (let depth = layer.extrudeDepth; depth >= 1; depth--) {
+                    metrics.lines.forEach((line, idx) => {
+                        const y = startY + idx * metrics.lineHeight + depth * dir.y;
+                        drawSpacedText(targetCtx, line, depth * dir.x, y, layer.align || 'center', layer.letterSpacing || 0);
+                    });
+                }
+            }
+
+            targetCtx.shadowColor = layer.shadowColor || 'rgba(0,0,0,0.5)';
+            targetCtx.shadowBlur = layer.shadowBlur || 0;
+            targetCtx.shadowOffsetX = layer.shadowX || 0;
+            targetCtx.shadowOffsetY = layer.shadowY || 0;
+            targetCtx.fillStyle = layer.color || '#ffffff';
+
+            metrics.lines.forEach((line, idx) => {
+                const y = startY + idx * metrics.lineHeight;
+                drawSpacedText(targetCtx, line, 0, y, layer.align || 'center', layer.letterSpacing || 0);
+            });
+
+            if ((layer.strokeWidth || 0) > 0) {
+                targetCtx.shadowColor = 'transparent';
+                targetCtx.strokeStyle = layer.strokeColor || '#000000';
+                targetCtx.lineWidth = layer.strokeWidth;
+                targetCtx.lineJoin = 'round';
+                metrics.lines.forEach((line, idx) => {
+                    const y = startY + idx * metrics.lineHeight;
+                    strokeSpacedText(targetCtx, line, 0, y, layer.align || 'center', layer.letterSpacing || 0);
+                });
+            }
+            targetCtx.restore();
+        }
+
+        function drawImageLayer(targetCtx, layer) {
+            if (!layer.img) return;
+            targetCtx.save();
+            targetCtx.globalAlpha = layer.opacity ?? 1;
+            targetCtx.translate(layer.x + layer.w / 2, layer.y + layer.h / 2);
+            targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
+            targetCtx.drawImage(layer.img, -layer.w / 2, -layer.h / 2, layer.w, layer.h);
+            targetCtx.restore();
+        }
+
+        function drawDrawingPaths(targetCtx) {
+            state.drawingPaths.forEach(path => {
+                if (!path.points || path.points.length < 2) return;
+                targetCtx.save();
+                targetCtx.globalCompositeOperation = path.mode === 'erase' ? 'destination-out' : 'source-over';
+                targetCtx.beginPath();
+                targetCtx.strokeStyle = path.mode === 'erase' ? 'rgba(0,0,0,1)' : path.color;
+                targetCtx.lineWidth = path.size;
+                targetCtx.lineCap = 'round';
+                targetCtx.lineJoin = 'round';
+                targetCtx.moveTo(path.points[0].x, path.points[0].y);
+                for (let i = 1; i < path.points.length; i++) {
+                    targetCtx.lineTo(path.points[i].x, path.points[i].y);
+                }
+                targetCtx.stroke();
+                targetCtx.restore();
+            });
+        }
+
+        function getImageLayerCorners(layer) {
+            const cx = layer.x + layer.w / 2;
+            const cy = layer.y + layer.h / 2;
+            const rad = (layer.rotation || 0) * Math.PI / 180;
+            const pts = [
+                { x: -layer.w / 2, y: -layer.h / 2, key: 'nw' },
+                { x: layer.w / 2, y: -layer.h / 2, key: 'ne' },
+                { x: layer.w / 2, y: layer.h / 2, key: 'se' },
+                { x: -layer.w / 2, y: layer.h / 2, key: 'sw' }
+            ];
+            return pts.map(p => ({
+                key: p.key,
+                x: cx + p.x * Math.cos(rad) - p.y * Math.sin(rad),
+                y: cy + p.x * Math.sin(rad) + p.y * Math.cos(rad)
+            }));
+        }
+
+        function drawSelection(targetCtx) {
+            const layer = state.layers.find(l => l.id === state.selectedLayerId);
+            if (!layer) return;
+            targetCtx.save();
+            targetCtx.strokeStyle = '#4ade80';
+            targetCtx.lineWidth = 2;
+            targetCtx.setLineDash([8, 4]);
+
+            if (layer.type === 'image') {
+                const cx = layer.x + layer.w / 2;
+                const cy = layer.y + layer.h / 2;
+                targetCtx.translate(cx, cy);
+                targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
+                targetCtx.strokeRect(-layer.w / 2, -layer.h / 2, layer.w, layer.h);
+                targetCtx.setLineDash([]);
+                const hs = 10;
+                const handles = [
+                    { x: -layer.w / 2, y: -layer.h / 2 },
+                    { x: layer.w / 2, y: -layer.h / 2 },
+                    { x: layer.w / 2, y: layer.h / 2 },
+                    { x: -layer.w / 2, y: layer.h / 2 }
+                ];
+                targetCtx.fillStyle = '#4ade80';
+                handles.forEach(h => targetCtx.fillRect(h.x - hs / 2, h.y - hs / 2, hs, hs));
+                targetCtx.beginPath();
+                targetCtx.moveTo(0, -layer.h / 2);
+                targetCtx.lineTo(0, -layer.h / 2 - 28);
+                targetCtx.stroke();
+                targetCtx.beginPath();
+                targetCtx.fillStyle = '#fbbf24';
+                targetCtx.arc(0, -layer.h / 2 - 28, 7, 0, Math.PI * 2);
+                targetCtx.fill();
+            } else {
+                const bounds = getTextLayerBounds(layer);
+                targetCtx.translate(layer.x, layer.y);
+                targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
+                targetCtx.strokeRect(-bounds.w / 2, -bounds.h / 2, bounds.w, bounds.h);
+            }
+
+            targetCtx.restore();
+        }
+
+        function drawPoster(targetCtx, { showSelection = false } = {}) {
+            targetCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+            drawBaseImage(targetCtx);
+            state.layers.forEach(layer => {
+                if (layer.type === 'image') drawImageLayer(targetCtx, layer);
+                if (layer.type === 'text') drawTextLayer(targetCtx, layer);
+            });
+            drawDrawingPaths(targetCtx);
+            if (showSelection) drawSelection(targetCtx);
+        }
+
+        function renderCanvas() {
+            drawPoster(ctx, { showSelection: true });
+        }
+
+        function getCleanImageData() {
+            const cleanCanvas = document.createElement('canvas');
+            cleanCanvas.width = CANVAS_W;
+            cleanCanvas.height = CANVAS_H;
+            const cleanCtx = cleanCanvas.getContext('2d');
+            drawPoster(cleanCtx, { showSelection: false });
+            return cleanCanvas;
+        }
+
+        async function verifyCanvasExportable(testCanvas) {
+            try {
+                testCanvas.getContext('2d').getImageData(0, 0, 1, 1);
+                return true;
+            } catch (err) {
+                return false;
+            }
         }
 
         // ========== STATUS ==========
@@ -366,143 +810,736 @@
             el.textContent = msg;
             el.className = `text-center text-sm mt-2 status-${type}`;
             el.classList.remove('hidden');
-            if (type !== 'info') setTimeout(() => el.classList.add('hidden'), 6000);
+            if (type !== 'info') setTimeout(() => el.classList.add('hidden'), 6500);
         }
 
         function showLoading(show) {
-            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+            const loading = document.getElementById('loadingIndicator');
+            const progressEl = document.getElementById('progressFill');
+            loading.style.display = show ? 'block' : 'none';
+
+            if (state.loadingInterval) {
+                clearInterval(state.loadingInterval);
+                state.loadingInterval = null;
+            }
+
             if (show) {
                 let progress = 0;
-                const interval = setInterval(() => {
+                progressEl.style.width = '0%';
+                state.loadingInterval = setInterval(() => {
                     progress += Math.random() * 10;
-                    if (progress > 90) progress = 90;
-                    document.getElementById('progressFill').style.width = progress + '%';
-                    if (!show) clearInterval(interval);
+                    if (progress > 92) progress = 92;
+                    progressEl.style.width = `${progress}%`;
                 }, 400);
+            } else {
+                progressEl.style.width = '100%';
+                setTimeout(() => { progressEl.style.width = '0%'; }, 400);
             }
         }
 
-        // ========== AI IMAGE GENERATION ==========
-        function generateAIImage() {
-            const prompt = document.getElementById('aiPrompt').value.trim();
-            if (!prompt) { showImageStatus('⚠️ Andika prompt', 'error'); return; }
-            debugLog('🎨 Inazalisha picha kwa prompt: ' + prompt, 'info');
-            
-            showLoading(true);
-            showImageStatus('🎨 Inazalisha picha...', 'info');
-            
-            const encodedPrompt = encodeURIComponent(prompt + ', professional, vibrant, high quality');
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1200&height=630&model=flux&enhance=true`;
-            
-            const img = new Image();
-            let loaded = false;
-            
-            const timeout = setTimeout(() => {
-                if (!loaded) {
-                    showLoading(false);
-                    showImageStatus('⏱️ Inachukua muda. Jaribu tena.', 'error');
+        function showSettingsStatus(msg, type) {
+            const el = document.getElementById('settingsStatus');
+            el.textContent = msg;
+            el.className = `text-sm text-center mt-2 status-${type}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        function showPublishStatus(msg, type) {
+            const el = document.getElementById('publishStatus');
+            el.textContent = msg;
+            el.className = `text-center text-sm mt-2 status-${type}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        // ========== INPUT SYNC ==========
+        function syncAdjustmentInputs() {
+            document.getElementById('adjBrightness').value = state.adjustments.brightness;
+            document.getElementById('adjContrast').value = state.adjustments.contrast;
+            document.getElementById('adjSaturation').value = state.adjustments.saturation;
+            document.getElementById('adjHue').value = state.adjustments.hue;
+            document.getElementById('adjBlur').value = state.adjustments.blur;
+            document.getElementById('adjGray').value = state.adjustments.grayscale;
+            document.getElementById('adjSepia').value = state.adjustments.sepia;
+            document.getElementById('adjOpacity').value = state.adjustments.opacity;
+            document.getElementById('adjRotation').value = state.adjustments.rotation;
+        }
+
+        function syncFitModeInput() {
+            document.getElementById('fitMode').value = state.baseTransform.fitMode;
+        }
+
+        function applyAdjustmentFromInputs() {
+            state.adjustments.brightness = Number(document.getElementById('adjBrightness').value);
+            state.adjustments.contrast = Number(document.getElementById('adjContrast').value);
+            state.adjustments.saturation = Number(document.getElementById('adjSaturation').value);
+            state.adjustments.hue = Number(document.getElementById('adjHue').value);
+            state.adjustments.blur = Number(document.getElementById('adjBlur').value);
+            state.adjustments.grayscale = Number(document.getElementById('adjGray').value);
+            state.adjustments.sepia = Number(document.getElementById('adjSepia').value);
+            state.adjustments.opacity = Number(document.getElementById('adjOpacity').value);
+            state.adjustments.rotation = Number(document.getElementById('adjRotation').value);
+            renderCanvas();
+        }
+
+        function resetAdjustments() {
+            state.adjustments = {
+                brightness: 100,
+                contrast: 100,
+                saturation: 100,
+                hue: 0,
+                blur: 0,
+                grayscale: 0,
+                sepia: 0,
+                opacity: 100,
+                rotation: 0
+            };
+            syncAdjustmentInputs();
+            renderCanvas();
+            pushHistory();
+        }
+
+        function resetBaseTransform() {
+            state.baseTransform.x = 0;
+            state.baseTransform.y = 0;
+            state.baseTransform.scale = 1;
+            state.baseTransform.rotation = 0;
+            renderCanvas();
+            pushHistory();
+        }
+
+        function zoomCanvas(multiplier) {
+            state.baseTransform.scale = clamp(state.baseTransform.scale * multiplier, 0.2, 6);
+            renderCanvas();
+            pushHistory();
+        }
+
+        // ========== IMAGE ==========
+        async function setBaseImage(img, src, { remote = false, exportSafe = true } = {}) {
+            state.canvasImage = img;
+            state.canvasImageSrc = src;
+            state.canvasImageRemote = remote;
+            state.canvasImageExportSafe = exportSafe;
+            state.baseTransform.x = 0;
+            state.baseTransform.y = 0;
+            state.baseTransform.scale = 1;
+            state.baseTransform.rotation = 0;
+            renderCanvas();
+            pushHistory();
+        }
+
+        async function fetchImageAsDataUrl(url) {
+            const res = await fetch(url, { method: 'GET', mode: 'cors' });
+            if (!res.ok) throw new Error('Download ya picha imeshindikana');
+            const blob = await res.blob();
+            return await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Imeshindwa kubadilisha picha'));
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        document.getElementById('imageUpload').addEventListener('change', async function(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = ev => resolve(ev.target.result);
+                    reader.onerror = () => reject(new Error('Kusoma file kumeshindikana'));
+                    reader.readAsDataURL(file);
+                });
+                const img = await ensureImageFromCache(dataUrl);
+                await setBaseImage(img, dataUrl, { remote: false, exportSafe: true });
+                showImageStatus('✅ Picha imepakiwa!', 'success');
+            } catch (err) {
+                showImageStatus(`❌ ${err.message}`, 'error');
+            }
+        });
+
+        document.getElementById('layerUpload').addEventListener('change', async function(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = ev => resolve(ev.target.result);
+                    reader.onerror = () => reject(new Error('Kusoma file kumeshindikana'));
+                    reader.readAsDataURL(file);
+                });
+                const img = await ensureImageFromCache(dataUrl);
+                const ratio = img.width / img.height;
+                let w = 260;
+                let h = w / ratio;
+                if (h > 220) {
+                    h = 220;
+                    w = h * ratio;
                 }
-            }, 30000);
-            
-            img.onload = function() {
-                loaded = true;
-                clearTimeout(timeout);
-                state.canvasImage = img;
+
+                const layer = {
+                    id: `layer_${Date.now()}_${++layerCounter}`,
+                    type: 'image',
+                    img,
+                    src: dataUrl,
+                    remote: false,
+                    x: CANVAS_W / 2 - w / 2,
+                    y: CANVAS_H / 2 - h / 2,
+                    w,
+                    h,
+                    rotation: 0,
+                    opacity: 1
+                };
+                state.layers.push(layer);
+                state.selectedLayerId = layer.id;
+                renderLayersList();
+                updateSelectedLayerInfo();
                 renderCanvas();
-                showLoading(false);
-                showImageStatus('✅ Picha imezalishwa!', 'success');
-                debugLog('✅ Picha imepakuliwa', 'success');
-            };
-            
-            img.onerror = function() {
-                if (!loaded) {
-                    clearTimeout(timeout);
-                    showLoading(false);
-                    showImageStatus('❌ Haiwezi kuzalisha. Jaribu prompt tofauti.', 'error');
-                    debugLog('❌ Imeshindwa kupakua picha', 'error');
+                pushHistory();
+                showImageStatus('✅ Image layer imeongezwa!', 'success');
+            } catch (err) {
+                showImageStatus(`❌ ${err.message}`, 'error');
+            }
+        });
+
+        // ========== AI IMAGE GENERATION ==========
+        async function generateAIImage() {
+            const subject = document.getElementById('aiPrompt').value.trim();
+            if (!subject) {
+                showImageStatus('⚠️ Andika prompt', 'error');
+                return;
+            }
+
+            const style = document.getElementById('aiStyle').value;
+            const negativePrompt = document.getElementById('aiNegativePrompt').value.trim();
+            const quality = 'high detail, clean composition, professional lighting, sharp focus, 1200x630 social poster framing';
+            const composedPrompt = `${subject}, ${STYLE_PRESETS[style] || ''}, ${quality}`;
+
+            debugLog('🎨 Prompt iliyoundwa: ' + composedPrompt, 'info');
+            showLoading(true);
+            showImageStatus('🎨 Inazalisha picha ya AI...', 'info');
+
+            try {
+                const url = new URL(`https://image.pollinations.ai/prompt/${encodeURIComponent(composedPrompt)}`);
+                url.searchParams.set('width', '1200');
+                url.searchParams.set('height', '630');
+                url.searchParams.set('model', 'flux');
+                url.searchParams.set('enhance', 'true');
+                if (negativePrompt) url.searchParams.set('negative_prompt', negativePrompt);
+
+                let img;
+                let srcForState = url.toString();
+                let exportSafe = false;
+
+                try {
+                    const dataUrl = await fetchImageAsDataUrl(url.toString());
+                    img = await ensureImageFromCache(dataUrl);
+                    srcForState = dataUrl;
+                    exportSafe = true;
+                    debugLog('✅ Picha imeletwa kama data URL salama kwa export', 'success');
+                } catch (fetchErr) {
+                    debugLog('⚠️ Fallback kwenye remote image: ' + fetchErr.message, 'warn');
+                    img = await ensureImageFromCache(url.toString(), true);
+                    const probe = document.createElement('canvas');
+                    probe.width = 2;
+                    probe.height = 2;
+                    const pctx = probe.getContext('2d');
+                    pctx.drawImage(img, 0, 0, 2, 2);
+                    exportSafe = await verifyCanvasExportable(probe);
                 }
-            };
-            
-            img.crossOrigin = 'anonymous';
-            img.src = imageUrl;
+
+                await setBaseImage(img, srcForState, { remote: true, exportSafe });
+                if (exportSafe) {
+                    showImageStatus('✅ Picha ya AI imezalishwa na iko tayari kupakua/kuchapisha.', 'success');
+                } else {
+                    showImageStatus('⚠️ Picha imeonyeshwa lakini CORS imezuia export. Pakua picha asili kisha ipakia tena kama local file.', 'warn');
+                }
+            } catch (err) {
+                showImageStatus(`❌ Kushindwa kuzalisha picha: ${err.message}`, 'error');
+                debugLog('❌ AI image error: ' + err.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         function autoGenerateMrBeast() {
             const postText = document.getElementById('postText').value.trim();
-            if (!postText) { showImageStatus('⚠️ Andika post kwanza', 'error'); return; }
-            document.getElementById('aiPrompt').value = postText + ', MrBeast style thumbnail, bold colors, dramatic lighting, eye-catching';
+            if (!postText) {
+                showImageStatus('⚠️ Andika post kwanza', 'error');
+                return;
+            }
+            document.getElementById('aiStyle').value = 'thumbnail';
+            document.getElementById('aiPrompt').value = `${postText}, dramatic expressions, bold shapes`;
             generateAIImage();
         }
 
-        // ========== AI ENHANCE TEXT ==========
-        async function aiEnhanceText() {
-            const apiKey = document.getElementById('apiKey').value.trim();
-            if (!apiKey) { showImageStatus('⚠️ Weka API Key', 'error'); return; }
-            const postText = document.getElementById('postText').value.trim();
-            if (!postText) { showImageStatus('⚠️ Andika post', 'error'); return; }
-            
-            showImageStatus('🧠 AI inapendekeza...', 'info');
-            try {
-                const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                    body: JSON.stringify({
-                        model: 'mistral-small-latest',
-                        messages: [{
-                            role: 'user',
-                            content: `Kwa post: "${postText}", pendekeza maandishi mafupi (maneno 3-7) ya kuweka kwenye picha. Jibu text moja tu.`
-                        }]
-                    })
+        // ========== TEXT LAYERS ==========
+        function getTextLayerBounds(layer) {
+            ctx.save();
+            ctx.font = `${layer.italic ? 'italic' : 'normal'} ${layer.bold ? '700' : '400'} ${layer.size}px ${layer.fontFamily || TEXT_FALLBACK}`;
+            const metrics = getTextLineMetrics(ctx, layer);
+            ctx.restore();
+            return {
+                w: metrics.maxWidth + 20 + layer.strokeWidth * 2 + layer.extrudeDepth * 2,
+                h: metrics.totalHeight + 20 + layer.strokeWidth * 2 + layer.extrudeDepth * 2
+            };
+        }
+
+        function layerToTextControls(layer) {
+            document.getElementById('overlayText').value = layer.text || '';
+            document.getElementById('textColor').value = layer.color || '#ffffff';
+            document.getElementById('textStrokeColor').value = layer.strokeColor || '#000000';
+            document.getElementById('text3dColor').value = layer.extrudeColor || '#222222';
+            document.getElementById('textSize').value = layer.size || 48;
+            document.getElementById('textLetterSpacing').value = layer.letterSpacing || 0;
+            document.getElementById('textRotation').value = layer.rotation || 0;
+            document.getElementById('textStrokeWidth').value = layer.strokeWidth || 0;
+            document.getElementById('textShadowBlur').value = layer.shadowBlur || 0;
+            document.getElementById('text3dDepth').value = layer.extrudeDepth || 0;
+            document.getElementById('textFontFamily').value = layer.fontFamily || 'DM Sans';
+            document.getElementById('textAlign').value = layer.align || 'center';
+            document.getElementById('text3dDirection').value = layer.extrudeDirection || 'down-right';
+            document.getElementById('textBold').checked = !!layer.bold;
+            document.getElementById('textItalic').checked = !!layer.italic;
+            document.getElementById('textSizeLabel').textContent = String(layer.size || 48);
+        }
+
+        function addOrUpdateTextOverlay() {
+            const text = document.getElementById('overlayText').value.trim();
+            if (!text) {
+                showImageStatus('⚠️ Andika maandishi', 'error');
+                return;
+            }
+
+            const payload = {
+                text,
+                color: document.getElementById('textColor').value,
+                strokeColor: document.getElementById('textStrokeColor').value,
+                strokeWidth: Number(document.getElementById('textStrokeWidth').value),
+                size: Number(document.getElementById('textSize').value),
+                bold: document.getElementById('textBold').checked,
+                italic: document.getElementById('textItalic').checked,
+                align: document.getElementById('textAlign').value,
+                fontFamily: document.getElementById('textFontFamily').value,
+                letterSpacing: Number(document.getElementById('textLetterSpacing').value),
+                rotation: Number(document.getElementById('textRotation').value),
+                shadowColor: 'rgba(0,0,0,0.7)',
+                shadowBlur: Number(document.getElementById('textShadowBlur').value),
+                shadowX: 3,
+                shadowY: 3,
+                extrudeDepth: Number(document.getElementById('text3dDepth').value),
+                extrudeColor: document.getElementById('text3dColor').value,
+                extrudeDirection: document.getElementById('text3dDirection').value
+            };
+
+            const selected = state.layers.find(l => l.id === state.selectedLayerId);
+            if (selected && selected.type === 'text') {
+                Object.assign(selected, payload);
+                showImageStatus('✅ Text layer imesasishwa', 'success');
+            } else {
+                const layer = {
+                    id: `layer_${Date.now()}_${++layerCounter}`,
+                    type: 'text',
+                    x: CANVAS_W / 2,
+                    y: CANVAS_H / 2,
+                    ...payload
+                };
+                state.layers.push(layer);
+                state.selectedLayerId = layer.id;
+                showImageStatus('✅ Text layer imeongezwa', 'success');
+            }
+
+            renderLayersList();
+            updateSelectedLayerInfo();
+            renderCanvas();
+            pushHistory();
+        }
+
+        function deleteSelectedLayer() {
+            if (!state.selectedLayerId) return;
+            const idx = state.layers.findIndex(l => l.id === state.selectedLayerId);
+            if (idx === -1) return;
+            state.layers.splice(idx, 1);
+            state.selectedLayerId = null;
+            renderLayersList();
+            updateSelectedLayerInfo();
+            renderCanvas();
+            pushHistory();
+        }
+
+        function moveLayerOrder(direction) {
+            if (!state.selectedLayerId) return;
+            const idx = state.layers.findIndex(l => l.id === state.selectedLayerId);
+            if (idx === -1) return;
+            const swapWith = idx + direction;
+            if (swapWith < 0 || swapWith >= state.layers.length) return;
+            const tmp = state.layers[idx];
+            state.layers[idx] = state.layers[swapWith];
+            state.layers[swapWith] = tmp;
+            renderLayersList();
+            renderCanvas();
+            pushHistory();
+        }
+
+        function setSelectedImageScale(multiplier) {
+            const layer = state.layers.find(l => l.id === state.selectedLayerId);
+            if (!layer || layer.type !== 'image') return;
+            layer.w = clamp(layer.w * multiplier, 20, 2000);
+            layer.h = clamp(layer.h * multiplier, 20, 2000);
+            renderLayersList();
+            renderCanvas();
+            pushHistory();
+        }
+
+        function rotateSelectedLayer(delta) {
+            const layer = state.layers.find(l => l.id === state.selectedLayerId);
+            if (!layer) return;
+            layer.rotation = (layer.rotation || 0) + delta;
+            renderCanvas();
+            pushHistory();
+        }
+
+        function renderLayersList() {
+            const list = document.getElementById('layersList');
+            list.textContent = '';
+            if (state.layers.length === 0) {
+                const p = document.createElement('div');
+                p.className = 'text-xs text-gray-500';
+                p.textContent = 'Hakuna layers bado';
+                list.appendChild(p);
+                return;
+            }
+
+            state.layers.forEach((layer, index) => {
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = `w-full text-left rounded px-2 py-1 text-xs border ${state.selectedLayerId === layer.id ? 'border-green-400 bg-green-900/20 text-green-200' : 'border-white/10 bg-black/20 text-gray-300'}`;
+                row.textContent = `${index + 1}. ${layer.type === 'text' ? 'Text' : 'Image'}${layer.type === 'text' ? `: ${layer.text.slice(0, 20)}` : ''}`;
+                row.addEventListener('click', () => {
+                    state.selectedLayerId = layer.id;
+                    if (layer.type === 'text') layerToTextControls(layer);
+                    renderLayersList();
+                    updateSelectedLayerInfo();
+                    renderCanvas();
                 });
-                const json = await res.json();
-                if (json.choices?.[0]) {
-                    document.getElementById('overlayText').value = json.choices[0].message.content.trim();
-                    showImageStatus('✅ AI imependekeza!', 'success');
+                list.appendChild(row);
+            });
+        }
+
+        // ========== INTERACTION ==========
+        function getCanvasPos(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function toLocalLayerPoint(layer, point) {
+            const cx = layer.x + layer.w / 2;
+            const cy = layer.y + layer.h / 2;
+            const dx = point.x - cx;
+            const dy = point.y - cy;
+            const rad = -(layer.rotation || 0) * Math.PI / 180;
+            return {
+                x: dx * Math.cos(rad) - dy * Math.sin(rad),
+                y: dx * Math.sin(rad) + dy * Math.cos(rad)
+            };
+        }
+
+        function hitTestImageLayer(layer, pos) {
+            const local = toLocalLayerPoint(layer, pos);
+            const inside = local.x >= -layer.w / 2 && local.x <= layer.w / 2 && local.y >= -layer.h / 2 && local.y <= layer.h / 2;
+
+            const handleSize = 14;
+            const corners = [
+                { x: -layer.w / 2, y: -layer.h / 2, type: 'resize' },
+                { x: layer.w / 2, y: -layer.h / 2, type: 'resize' },
+                { x: layer.w / 2, y: layer.h / 2, type: 'resize' },
+                { x: -layer.w / 2, y: layer.h / 2, type: 'resize' }
+            ];
+
+            for (const c of corners) {
+                if (Math.abs(local.x - c.x) <= handleSize && Math.abs(local.y - c.y) <= handleSize) {
+                    return { type: 'resize' };
                 }
-            } catch (err) { 
+            }
+
+            if (Math.abs(local.x) < 14 && Math.abs(local.y + layer.h / 2 + 28) < 14) {
+                return { type: 'rotate' };
+            }
+
+            if (!inside) return null;
+            return { type: 'move' };
+        }
+
+        function hitTestTextLayer(layer, pos) {
+            const bounds = getTextLayerBounds(layer);
+            const dx = pos.x - layer.x;
+            const dy = pos.y - layer.y;
+            const rad = -(layer.rotation || 0) * Math.PI / 180;
+            const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+            const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+            const inside = lx >= -bounds.w / 2 && lx <= bounds.w / 2 && ly >= -bounds.h / 2 && ly <= bounds.h / 2;
+            return inside ? { type: 'move' } : null;
+        }
+
+        function findTopLayerAt(pos) {
+            for (let i = state.layers.length - 1; i >= 0; i--) {
+                const layer = state.layers[i];
+                if (layer.type === 'image') {
+                    const hit = hitTestImageLayer(layer, pos);
+                    if (hit) return { layer, hit };
+                }
+                if (layer.type === 'text') {
+                    const hit = hitTestTextLayer(layer, pos);
+                    if (hit) return { layer, hit };
+                }
+            }
+            return null;
+        }
+
+        function pointerDown(clientX, clientY) {
+            const pos = getCanvasPos(clientX, clientY);
+            state.pointerStart = pos;
+            state.isPointerDown = true;
+
+            if (state.currentTool === 'draw' || state.currentTool === 'erase') {
+                state.currentPath = {
+                    mode: state.currentTool === 'erase' ? 'erase' : 'draw',
+                    color: document.getElementById('drawColor').value,
+                    size: state.currentTool === 'erase' ? Number(document.getElementById('drawSize').value) * 2.2 : Number(document.getElementById('drawSize').value),
+                    points: [pos]
+                };
+                state.drawingPaths.push(state.currentPath);
+                renderCanvas();
+                return;
+            }
+
+            const found = findTopLayerAt(pos);
+            if (found) {
+                state.selectedLayerId = found.layer.id;
+                updateSelectedLayerInfo();
+                renderLayersList();
+                if (found.layer.type === 'text') layerToTextControls(found.layer);
+
+                if (found.layer.type === 'image' && found.hit.type === 'resize') {
+                    state.pointerAction = { type: 'resize-image', layerId: found.layer.id, startW: found.layer.w, startH: found.layer.h, startDist: Math.hypot(pos.x - (found.layer.x + found.layer.w / 2), pos.y - (found.layer.y + found.layer.h / 2)) };
+                } else if (found.layer.type === 'image' && found.hit.type === 'rotate') {
+                    const cx = found.layer.x + found.layer.w / 2;
+                    const cy = found.layer.y + found.layer.h / 2;
+                    state.pointerAction = { type: 'rotate-layer', layerId: found.layer.id, startAngle: Math.atan2(pos.y - cy, pos.x - cx), startRotation: found.layer.rotation || 0 };
+                } else {
+                    state.pointerAction = { type: 'move-layer', layerId: found.layer.id, offX: pos.x - (found.layer.type === 'image' ? found.layer.x : found.layer.x), offY: pos.y - (found.layer.type === 'image' ? found.layer.y : found.layer.y) };
+                }
+                renderCanvas();
+                return;
+            }
+
+            state.selectedLayerId = null;
+            updateSelectedLayerInfo();
+            renderLayersList();
+            state.pointerAction = { type: 'pan-base', startX: pos.x, startY: pos.y, baseX: state.baseTransform.x, baseY: state.baseTransform.y };
+            renderCanvas();
+        }
+
+        function pointerMove(clientX, clientY) {
+            const pos = getCanvasPos(clientX, clientY);
+            if (!state.isPointerDown) return;
+
+            if (state.currentTool === 'draw' || state.currentTool === 'erase') {
+                if (state.currentPath) {
+                    state.currentPath.points.push(pos);
+                    renderCanvas();
+                }
+                return;
+            }
+
+            if (!state.pointerAction) return;
+            const action = state.pointerAction;
+            const layer = action.layerId ? state.layers.find(l => l.id === action.layerId) : null;
+            if (!layer && action.layerId) return;
+
+            if (action.type === 'move-layer') {
+                if (layer.type === 'image') {
+                    layer.x = pos.x - action.offX;
+                    layer.y = pos.y - action.offY;
+                } else {
+                    layer.x = pos.x - action.offX;
+                    layer.y = pos.y - action.offY;
+                }
+            } else if (action.type === 'resize-image') {
+                const cx = layer.x + action.startW / 2;
+                const cy = layer.y + action.startH / 2;
+                const dist = Math.hypot(pos.x - cx, pos.y - cy);
+                const ratio = clamp(dist / (action.startDist || 1), 0.1, 10);
+                layer.w = clamp(action.startW * ratio, 20, 2200);
+                layer.h = clamp(action.startH * ratio, 20, 2200);
+            } else if (action.type === 'rotate-layer') {
+                const cx = layer.type === 'image' ? layer.x + layer.w / 2 : layer.x;
+                const cy = layer.type === 'image' ? layer.y + layer.h / 2 : layer.y;
+                const ang = Math.atan2(pos.y - cy, pos.x - cx);
+                layer.rotation = action.startRotation + ((ang - action.startAngle) * 180 / Math.PI);
+            } else if (action.type === 'pan-base') {
+                const dx = pos.x - action.startX;
+                const dy = pos.y - action.startY;
+                state.baseTransform.x = action.baseX + dx;
+                state.baseTransform.y = action.baseY + dy;
+            }
+
+            renderCanvas();
+        }
+
+        function pointerUp() {
+            if (!state.isPointerDown) return;
+            state.isPointerDown = false;
+            const shouldSave = !!state.pointerAction || !!state.currentPath;
+            state.pointerAction = null;
+            state.currentPath = null;
+            if (shouldSave) pushHistory();
+            renderCanvas();
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            canvas.setPointerCapture(e.pointerId);
+            pointerDown(e.clientX, e.clientY);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            e.preventDefault();
+            pointerMove(e.clientX, e.clientY);
+        });
+
+        canvas.addEventListener('pointerup', (e) => {
+            e.preventDefault();
+            pointerUp();
+        });
+
+        canvas.addEventListener('pointercancel', pointerUp);
+        canvas.addEventListener('mouseleave', pointerUp);
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 1.06 : 0.94;
+            state.baseTransform.scale = clamp(state.baseTransform.scale * delta, 0.2, 6);
+            renderCanvas();
+        }, { passive: false });
+
+        // ========== CANVAS COMMANDS ==========
+        function clearCanvas() {
+            state.canvasImage = null;
+            state.canvasImageSrc = null;
+            state.canvasImageRemote = false;
+            state.canvasImageExportSafe = true;
+            state.layers = [];
+            state.drawingPaths = [];
+            state.selectedLayerId = null;
+            state.baseTransform = { x: 0, y: 0, scale: 1, rotation: 0, fitMode: state.baseTransform.fitMode || 'cover' };
+            resetAdjustments();
+            renderLayersList();
+            updateSelectedLayerInfo();
+            renderCanvas();
+            pushHistory();
+            showImageStatus('🗑️ Turubai imesafishwa', 'info');
+        }
+
+        async function downloadImage() {
+            try {
+                const clean = getCleanImageData();
+                const exportable = await verifyCanvasExportable(clean);
+                if (!exportable || !state.canvasImageExportSafe) {
+                    showImageStatus('⚠️ Haiwezi kupakua sasa kwa sababu ya CORS/tainted-canvas kwenye picha ya remote. Pakia picha hiyo kama local file kwanza.', 'warn');
+                    return;
+                }
+                const link = document.createElement('a');
+                link.download = 'post-image.png';
+                link.href = clean.toDataURL('image/png');
+                link.click();
+                showImageStatus('✅ Picha imepakuliwa', 'success');
+            } catch (err) {
+                showImageStatus('❌ Pakua imeshindikana: ' + err.message, 'error');
+            }
+        }
+
+        function editPost() {
+            const post = document.getElementById('postText');
+            post.focus();
+            post.select();
+        }
+
+        // ========== MISTRAL ==========
+        async function requestMistral(messages) {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) throw new Error('Weka API Key');
+
+            const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + apiKey
+                },
+                body: JSON.stringify({
+                    model: 'mistral-small-latest',
+                    messages
+                })
+            });
+
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(json.error?.message || `Mistral error ${res.status}`);
+            }
+            const text = json.choices?.[0]?.message?.content?.trim();
+            if (!text) throw new Error('Jibu halikupatikana kutoka AI');
+            return text;
+        }
+
+        async function aiEnhanceText() {
+            const postText = document.getElementById('postText').value.trim();
+            if (!postText) {
+                showImageStatus('⚠️ Andika post kwanza', 'error');
+                return;
+            }
+            showImageStatus('🧠 AI inapendekeza text...', 'info');
+            try {
+                const suggestion = await requestMistral([
+                    {
+                        role: 'user',
+                        content: `Kwa post hii: "${postText}" pendekeza maneno 3-7 ya headline ya picha. Jibu text moja tu kwa Kiswahili.`
+                    }
+                ]);
+                document.getElementById('overlayText').value = suggestion;
+                showImageStatus('✅ AI imependekeza maandishi', 'success');
+            } catch (err) {
                 showImageStatus('❌ ' + err.message, 'error');
             }
         }
 
-        // ========== CHAT ==========
         async function sendMessage(e) {
             e.preventDefault();
             const input = document.getElementById('chatInput');
             const msg = input.value.trim();
             if (!msg) return;
             input.value = '';
-            
+
             addChatBubble(msg, 'user');
             state.conversation.push({ role: 'user', content: msg });
-            
-            const apiKey = document.getElementById('apiKey').value.trim();
-            if (!apiKey) { addChatBubble('⚠️ Weka API Key.', 'ai'); return; }
-            
+
             addChatBubble('⏳ Inafikiri...', 'ai', 'thinking');
-            
             try {
-                const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                    body: JSON.stringify({
-                        model: 'mistral-small-latest',
-                        messages: [{
-                            role: 'system',
-                            content: `Wewe ni mtaalamu wa Facebook posts. Andaa posts bila markdown, bila bold, bila asterisks. Jibu Kiswahili.`
-                        }, ...state.conversation]
-                    })
-                });
-                const json = await res.json();
+                const reply = await requestMistral([
+                    {
+                        role: 'system',
+                        content: 'Wewe ni mtaalamu wa Facebook posts. Andaa post yenye mvuto, bila markdown, bila asterisks, kwa Kiswahili.'
+                    },
+                    ...state.conversation
+                ]);
                 document.getElementById('thinking')?.remove();
-                
-                if (json.choices?.[0]) {
-                    const reply = json.choices[0].message.content;
-                    state.conversation.push({ role: 'assistant', content: reply });
-                    addChatBubble(reply, 'ai');
-                    document.getElementById('postText').value = reply;
-                } else {
-                    addChatBubble('❌ Jibu halikupatikana.', 'ai');
-                }
+                state.conversation.push({ role: 'assistant', content: reply });
+                addChatBubble(reply, 'ai');
+                document.getElementById('postText').value = reply;
+                saveToLocalStorage();
             } catch (err) {
                 document.getElementById('thinking')?.remove();
                 addChatBubble('❌ ' + err.message, 'ai');
@@ -520,45 +1557,65 @@
         }
 
         async function regeneratePost() {
-            const apiKey = document.getElementById('apiKey').value.trim();
-            if (!apiKey) { showImageStatus('⚠️ Weka API Key', 'error'); return; }
-            if (state.conversation.length === 0) { showImageStatus('⚠️ Ongea na AI', 'error'); return; }
-            
-            state.conversation.push({ role: 'user', content: 'Boresha post hiyo.' });
+            if (state.conversation.length === 0) {
+                showImageStatus('⚠️ Ongea na AI kwanza', 'error');
+                return;
+            }
+            state.conversation.push({ role: 'user', content: 'Boresha post hiyo iwe na nguvu zaidi.' });
             try {
-                const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                    body: JSON.stringify({
-                        model: 'mistral-small-latest',
-                        messages: [{
-                            role: 'system',
-                            content: 'Mtaalamu wa posts. Bila markdown/bold/asterisks. Kiswahili.'
-                        }, ...state.conversation]
-                    })
-                });
-                const json = await res.json();
-                if (json.choices?.[0]) {
-                    const reply = json.choices[0].message.content;
-                    state.conversation.push({ role: 'assistant', content: reply });
-                    document.getElementById('postText').value = reply;
-                    addChatBubble(reply, 'ai');
-                }
-            } catch (err) { showImageStatus('❌ ' + err.message, 'error'); }
+                const reply = await requestMistral([
+                    {
+                        role: 'system',
+                        content: 'Mtaalamu wa posts. Bila markdown/bold/asterisks. Kiswahili.'
+                    },
+                    ...state.conversation
+                ]);
+                state.conversation.push({ role: 'assistant', content: reply });
+                document.getElementById('postText').value = reply;
+                addChatBubble(reply, 'ai');
+                saveToLocalStorage();
+            } catch (err) {
+                showImageStatus('❌ ' + err.message, 'error');
+            }
         }
 
-        // ========== PAGES ==========
+        // ========== SETTINGS/PAGES ==========
+        function saveSettings() {
+            state.apiKey = document.getElementById('apiKey').value.trim();
+            state.supabaseUrl = document.getElementById('supabaseUrl').value.trim();
+            state.supabaseKey = document.getElementById('supabaseKey').value.trim();
+            saveToLocalStorage();
+            showSettingsStatus('✅ Mipangilio imehifadhiwa!', 'success');
+            showToast('✅ Mipangilio imehifadhiwa!', 'success');
+            if (state.supabaseUrl && state.supabaseKey) {
+                loadPastPosts();
+            }
+        }
+
         function renderPages() {
             const container = document.getElementById('pagesList');
-            container.innerHTML = '';
+            container.textContent = '';
             state.pages.forEach((p, i) => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between bg-black/20 rounded-lg px-3 py-2';
-                div.innerHTML = `
-                    <span class="text-white text-sm">${p.name || 'Page '+(i+1)} <span class="text-gray-500 text-xs">(${p.id})</span></span>
-                    <button onclick="removePage(${i})" class="text-red-400 hover:text-red-300 text-sm">✕</button>
-                `;
-                container.appendChild(div);
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between bg-black/20 rounded-lg px-3 py-2';
+
+                const left = document.createElement('span');
+                left.className = 'text-white text-sm';
+                left.textContent = p.name || `Page ${i + 1}`;
+
+                const sub = document.createElement('span');
+                sub.className = 'text-gray-500 text-xs ml-2';
+                sub.textContent = `(${p.id})`;
+                left.appendChild(sub);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'text-red-400 hover:text-red-300 text-sm';
+                removeBtn.textContent = '✕';
+                removeBtn.addEventListener('click', () => removePage(i));
+
+                row.appendChild(left);
+                row.appendChild(removeBtn);
+                container.appendChild(row);
             });
             renderPublishPages();
             updatePublishInfo();
@@ -569,12 +1626,15 @@
             const name = document.getElementById('pageName').value.trim();
             const id = document.getElementById('pageId').value.trim();
             const token = document.getElementById('pageToken').value.trim();
-            if (!id || !token) { showSettingsStatus('⚠️ Weka Page ID na Token', 'error'); return; }
+            if (!id || !token) {
+                showSettingsStatus('⚠️ Weka Page ID na Token', 'error');
+                return;
+            }
             state.pages.push({ name: name || 'Page', id, token });
-            renderPages();
             document.getElementById('pageName').value = '';
             document.getElementById('pageId').value = '';
             document.getElementById('pageToken').value = '';
+            renderPages();
             showSettingsStatus('✅ Page imeongezwa!', 'success');
             showToast('✅ Page imeongezwa!', 'success');
         }
@@ -582,109 +1642,120 @@
         function removePage(index) {
             state.pages.splice(index, 1);
             renderPages();
-            saveToLocalStorage();
         }
 
         function renderPublishPages() {
             const container = document.getElementById('publishPages');
-            container.innerHTML = '';
+            container.textContent = '';
             state.pages.forEach((p, i) => {
-                const div = document.createElement('div');
-                div.className = 'page-card';
-                div.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-white font-semibold text-sm">${p.name}</span>
-                        <label class="flex items-center gap-1 text-xs text-gray-400">
-                            <input type="checkbox" class="publish-toggle accent-green-500" data-idx="${i}" checked>
-                            Chapisha
-                        </label>
-                    </div>
-                    <div class="schedule-grid mt-2">
-                        <div>
-                            <label class="text-xs text-gray-500 block">📅 Tarehe</label>
-                            <input type="date" class="publish-date w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-white text-xs" data-idx="${i}">
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-500 block">⏰ Saa</label>
-                            <input type="time" class="publish-time w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-white text-xs" data-idx="${i}">
-                        </div>
-                    </div>
-                    <div class="countdown mt-1" id="countdown-${i}"></div>
-                `;
-                container.appendChild(div);
+                const card = document.createElement('div');
+                card.className = 'page-card';
+
+                const top = document.createElement('div');
+                top.className = 'flex items-center justify-between';
+
+                const name = document.createElement('span');
+                name.className = 'text-white font-semibold text-sm';
+                name.textContent = p.name;
+
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-1 text-xs text-gray-400';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'publish-toggle accent-green-500';
+                cb.dataset.idx = String(i);
+                cb.checked = true;
+                const cbText = document.createTextNode('Chapisha');
+                label.appendChild(cb);
+                label.appendChild(cbText);
+
+                top.appendChild(name);
+                top.appendChild(label);
+
+                const grid = document.createElement('div');
+                grid.className = 'schedule-grid mt-2';
+
+                const d1 = document.createElement('div');
+                const d1l = document.createElement('label');
+                d1l.className = 'text-xs text-gray-500 block';
+                d1l.textContent = '📅 Tarehe';
+                const dInp = document.createElement('input');
+                dInp.type = 'date';
+                dInp.className = 'publish-date w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-white text-xs';
+                dInp.dataset.idx = String(i);
+                d1.appendChild(d1l);
+                d1.appendChild(dInp);
+
+                const d2 = document.createElement('div');
+                const t1l = document.createElement('label');
+                t1l.className = 'text-xs text-gray-500 block';
+                t1l.textContent = '⏰ Saa';
+                const tInp = document.createElement('input');
+                tInp.type = 'time';
+                tInp.className = 'publish-time w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-white text-xs';
+                tInp.dataset.idx = String(i);
+                d2.appendChild(t1l);
+                d2.appendChild(tInp);
+
+                grid.appendChild(d1);
+                grid.appendChild(d2);
+
+                const countdown = document.createElement('div');
+                countdown.className = 'countdown mt-1';
+                countdown.id = `countdown-${i}`;
+
+                card.appendChild(top);
+                card.appendChild(grid);
+                card.appendChild(countdown);
+                container.appendChild(card);
             });
-            
+
             const today = new Date().toISOString().split('T')[0];
             const now = new Date();
             const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
             container.querySelectorAll('.publish-date').forEach(el => el.value = today);
             container.querySelectorAll('.publish-time').forEach(el => el.value = timeStr);
-            
+
+            if (state.countdownInterval) {
+                clearInterval(state.countdownInterval);
+                state.countdownInterval = null;
+            }
             updateCountdowns();
-            setInterval(updateCountdowns, 60000);
+            state.countdownInterval = setInterval(updateCountdowns, 60000);
         }
 
         function updateCountdowns() {
             document.querySelectorAll('.publish-toggle:checked').forEach(cb => {
-                const idx = parseInt(cb.dataset.idx);
+                const idx = parseInt(cb.dataset.idx, 10);
                 const dateInput = document.querySelector(`.publish-date[data-idx="${idx}"]`);
                 const timeInput = document.querySelector(`.publish-time[data-idx="${idx}"]`);
-                if (dateInput && timeInput) {
-                    const schedule = new Date(`${dateInput.value}T${timeInput.value}`);
-                    const now = new Date();
-                    const diff = schedule - now;
-                    const el = document.getElementById(`countdown-${idx}`);
-                    if (el) {
-                        if (diff > 0) {
-                            const hours = Math.floor(diff / 3600000);
-                            const mins = Math.floor((diff % 3600000) / 60000);
-                            el.textContent = `⏳ Muda uliobaki: ${hours}h ${mins}m`;
-                            el.style.color = '#fbbf24';
-                        } else if (diff > -60000) {
-                            el.textContent = '🔴 Inachapishwa sasa...';
-                            el.style.color = '#4ade80';
-                        } else {
-                            el.textContent = '✅ Imechapishwa';
-                            el.style.color = '#4ade80';
-                        }
-                    }
+                if (!dateInput || !timeInput) return;
+                const schedule = new Date(`${dateInput.value}T${timeInput.value}`);
+                const now = new Date();
+                const diff = schedule - now;
+                const el = document.getElementById(`countdown-${idx}`);
+                if (!el) return;
+                if (diff > 0) {
+                    const hours = Math.floor(diff / 3600000);
+                    const mins = Math.floor((diff % 3600000) / 60000);
+                    el.textContent = `⏳ Muda uliobaki: ${hours}h ${mins}m`;
+                    el.style.color = '#fbbf24';
+                } else if (diff > -60000) {
+                    el.textContent = '🔴 Inachapishwa sasa...';
+                    el.style.color = '#4ade80';
+                } else {
+                    el.textContent = '✅ Imechapishwa';
+                    el.style.color = '#4ade80';
                 }
             });
         }
 
         function updatePublishInfo() {
-            document.getElementById('publishInfo').textContent = state.pages.length > 0 ? 
-                `📡 Post itaenda kwenye page ${state.pages.length}` : '⚠️ Ongeza page kwanza';
+            const info = document.getElementById('publishInfo');
+            info.textContent = state.pages.length > 0 ? `📡 Post itaenda kwenye page ${state.pages.length}` : '⚠️ Ongeza page kwanza';
         }
 
-        // ========== SETTINGS ==========
-        function saveSettings() {
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
-            const supabaseKey = document.getElementById('supabaseKey').value.trim();
-            
-            state.apiKey = apiKey;
-            state.supabaseUrl = supabaseUrl;
-            state.supabaseKey = supabaseKey;
-            
-            showSettingsStatus('✅ Mipangilio imehifadhiwa!', 'success');
-            showToast('✅ Mipangilio imehifadhiwa!', 'success');
-            saveToLocalStorage();
-            
-            if (supabaseUrl && supabaseKey) {
-                loadPastPosts();
-            }
-        }
-
-        function showSettingsStatus(msg, type) {
-            const el = document.getElementById('settingsStatus');
-            el.textContent = msg;
-            el.className = `text-sm text-center mt-2 status-${type}`;
-            el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 3000);
-        }
-
-        // ========== LOCAL STORAGE ==========
+        // ========== STORAGE ==========
         function saveToLocalStorage() {
             try {
                 const data = {
@@ -696,7 +1767,9 @@
                     supabaseKey: document.getElementById('supabaseKey').value
                 };
                 localStorage.setItem('ai_poster_data', JSON.stringify(data));
-            } catch(e) { console.error('Save error:', e); }
+            } catch (e) {
+                console.error('Save error:', e);
+            }
         }
 
         function loadFromLocalStorage() {
@@ -704,13 +1777,15 @@
                 const raw = localStorage.getItem('ai_poster_data');
                 if (!raw) return;
                 const data = JSON.parse(raw);
-                if (data.pages) state.pages = data.pages;
-                if (data.conversation) state.conversation = data.conversation;
-                if (data.pastPosts) state.pastPosts = data.pastPosts;
+                if (Array.isArray(data.pages)) state.pages = data.pages;
+                if (Array.isArray(data.conversation)) state.conversation = data.conversation;
+                if (Array.isArray(data.pastPosts)) state.pastPosts = data.pastPosts;
                 if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
                 if (data.supabaseUrl) document.getElementById('supabaseUrl').value = data.supabaseUrl;
                 if (data.supabaseKey) document.getElementById('supabaseKey').value = data.supabaseKey;
-            } catch(e) { console.error('Load error:', e); }
+            } catch (e) {
+                console.error('Load error:', e);
+            }
         }
 
         // ========== SUPABASE ==========
@@ -720,13 +1795,17 @@
             if (!supabaseUrl || !supabaseKey) return;
             try {
                 const res = await fetch(supabaseUrl + '/rest/v1/posts?order=created_at.desc&limit=30', {
-                    headers: { 'apikey': supabaseKey, 'Authorization': 'Bearer ' + supabaseKey }
+                    headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
                 });
-                if (res.ok) {
-                    state.pastPosts = await res.json();
-                    saveToLocalStorage();
+                if (!res.ok) {
+                    debugLog(`⚠️ Supabase load error ${res.status}`, 'warn');
+                    return;
                 }
-            } catch(e) { console.error('Supabase error:', e); }
+                state.pastPosts = await res.json();
+                saveToLocalStorage();
+            } catch (e) {
+                debugLog('⚠️ Supabase error: ' + e.message, 'warn');
+            }
         }
 
         async function savePostToSupabase(content) {
@@ -734,314 +1813,168 @@
             const supabaseKey = document.getElementById('supabaseKey').value.trim();
             if (!supabaseUrl || !supabaseKey) return;
             try {
-                await fetch(supabaseUrl + '/rest/v1/posts', {
+                const res = await fetch(supabaseUrl + '/rest/v1/posts', {
                     method: 'POST',
                     headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': 'Bearer ' + supabaseKey,
+                        apikey: supabaseKey,
+                        Authorization: 'Bearer ' + supabaseKey,
                         'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
+                        Prefer: 'return=minimal'
                     },
                     body: JSON.stringify({ content, created_at: new Date().toISOString() })
                 });
+                if (!res.ok) {
+                    debugLog(`⚠️ Supabase save error ${res.status}`, 'warn');
+                    return;
+                }
                 state.pastPosts.unshift({ content, created_at: new Date().toISOString() });
                 saveToLocalStorage();
-            } catch(e) { console.error('Save error:', e); }
-        }
-
-        // ========== GET CLEAN IMAGE DATA ==========
-        function getCleanImageData() {
-            // Create a clean canvas to avoid tainted canvas issues
-            const cleanCanvas = document.createElement('canvas');
-            cleanCanvas.width = canvas.width;
-            cleanCanvas.height = canvas.height;
-            const cleanCtx = cleanCanvas.getContext('2d');
-            
-            // Draw the current canvas content
-            if (state.canvasImage) {
-                cleanCtx.drawImage(state.canvasImage, 0, 0, cleanCanvas.width, cleanCanvas.height);
+            } catch (e) {
+                debugLog('⚠️ Save error: ' + e.message, 'warn');
             }
-            
-            // Draw image layers
-            state.imageLayers.forEach(l => {
-                cleanCtx.drawImage(l.img, l.x, l.y, l.w, l.h);
-            });
-            
-            // Draw text overlays
-            state.textOverlays.forEach(o => {
-                cleanCtx.font = `${o.bold ? '900' : '400'} ${o.size}px DM Sans`;
-                cleanCtx.textAlign = 'center';
-                cleanCtx.textBaseline = 'middle';
-                cleanCtx.shadowColor = 'rgba(0,0,0,0.8)';
-                cleanCtx.shadowBlur = 8;
-                cleanCtx.shadowOffsetX = 3;
-                cleanCtx.shadowOffsetY = 3;
-                cleanCtx.fillStyle = o.color;
-                cleanCtx.fillText(o.text, o.x, o.y);
-                cleanCtx.shadowColor = 'transparent';
-                cleanCtx.strokeStyle = 'rgba(0,0,0,0.5)';
-                cleanCtx.lineWidth = 3;
-                cleanCtx.strokeText(o.text, o.x, o.y);
-            });
-            
-            return cleanCanvas;
         }
 
         // ========== PUBLISH ==========
         async function publishPost() {
             const btn = document.querySelector('[onclick="publishPost()"]');
             const postText = document.getElementById('postText').value.trim();
-            
-            if (!postText) { showPublishStatus('⚠️ Andika post!', 'error'); return; }
-            if (state.pages.length === 0) { showPublishStatus('⚠️ Ongeza page!', 'error'); return; }
-            
+
+            if (!postText) {
+                showPublishStatus('⚠️ Andika post!', 'error');
+                return;
+            }
+            if (state.pages.length === 0) {
+                showPublishStatus('⚠️ Ongeza page!', 'error');
+                return;
+            }
+
             btn.disabled = true;
             btn.textContent = '⏳ Inachapisha...';
-            debugLog('🚀 Inaanza kuchapisha...', 'info');
-            
+
             let successCount = 0;
-            let errors = [];
-            
+            const errors = [];
             const toPublish = [];
+
             document.querySelectorAll('.publish-toggle:checked').forEach(cb => {
-                const idx = parseInt(cb.dataset.idx);
+                const idx = parseInt(cb.dataset.idx, 10);
                 const dateInput = document.querySelector(`.publish-date[data-idx="${idx}"]`);
                 const timeInput = document.querySelector(`.publish-time[data-idx="${idx}"]`);
                 const dateStr = dateInput?.value || new Date().toISOString().split('T')[0];
                 const timeStr = timeInput?.value || '12:00';
-                toPublish.push({
-                    page: state.pages[idx],
-                    schedule: new Date(`${dateStr}T${timeStr}`)
-                });
+                toPublish.push({ page: state.pages[idx], schedule: new Date(`${dateStr}T${timeStr}`) });
             });
-            
+
             if (toPublish.length === 0) {
                 showPublishStatus('⚠️ Chagua page!', 'error');
                 btn.disabled = false;
                 btn.textContent = '🚀 Chapisha kwenye Pages';
                 return;
             }
-            
+
             for (const { page, schedule } of toPublish) {
                 try {
-                    debugLog(`📤 Inachapisha kwenye ${page.name}...`, 'info');
-                    
                     let photoId = null;
-                    
-                    // Check if there's an image to upload
-                    if (state.canvasImage || state.textOverlays.length > 0 || state.imageLayers.length > 0) {
-                        // Use clean canvas to avoid tainted canvas issues
+                    if (state.canvasImage || state.layers.length > 0 || state.drawingPaths.length > 0) {
                         const cleanCanvas = getCleanImageData();
-                        
-                        // Convert to blob
-                        const blob = await new Promise(resolve => {
-                            cleanCanvas.toBlob(resolve, 'image/jpeg', 0.9);
-                        });
-                        
-                        if (blob) {
-                            // Upload to Facebook
-                            const photoForm = new FormData();
-                            photoForm.append('source', blob, 'post.jpg');
-                            photoForm.append('access_token', page.token);
-                            photoForm.append('published', 'false');
-                            
-                            const photoRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
-                                method: 'POST',
-                                body: photoForm
-                            });
-                            const photoJson = await photoRes.json();
-                            
-                            if (photoJson.id) {
-                                photoId = photoJson.id;
-                                debugLog(`📸 Picha imepakiwa: ${photoId}`, 'success');
-                            } else {
-                                debugLog(`❌ Picha imeshindwa kupakiwa: ${photoJson.error?.message}`, 'error');
-                            }
+                        const exportable = await verifyCanvasExportable(cleanCanvas);
+                        if (!exportable || !state.canvasImageExportSafe) {
+                            throw new Error('CORS/tainted-canvas: haiwezi kutengeneza faili la kupakia. Pakia picha ya local kwanza.');
                         }
+
+                        const blob = await new Promise(resolve => cleanCanvas.toBlob(resolve, 'image/jpeg', 0.92));
+                        if (!blob) throw new Error('Imeshindikana kutengeneza picha ya kupakia');
+
+                        const photoForm = new FormData();
+                        photoForm.append('source', blob, 'post.jpg');
+                        photoForm.append('access_token', page.token);
+                        photoForm.append('published', 'false');
+
+                        const photoRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+                            method: 'POST',
+                            body: photoForm
+                        });
+                        const photoJson = await photoRes.json();
+                        if (!photoRes.ok || !photoJson.id) {
+                            throw new Error(photoJson.error?.message || 'Upload ya picha imeshindikana');
+                        }
+                        photoId = photoJson.id;
                     }
-                    
-                    // Create post
+
                     const feedForm = new FormData();
                     feedForm.append('message', postText);
                     feedForm.append('access_token', page.token);
-                    if (photoId) {
-                        feedForm.append('attached_media', JSON.stringify([{ media_fbid: photoId }]));
-                    }
-                    
+                    if (photoId) feedForm.append('attached_media', JSON.stringify([{ media_fbid: photoId }]));
+
                     const now = new Date();
                     const minScheduleTime = new Date(now.getTime() + 10 * 60000);
                     if (schedule >= minScheduleTime) {
                         feedForm.append('scheduled_publish_time', Math.floor(schedule.getTime() / 1000));
                         feedForm.append('published', 'false');
-                        debugLog(`⏰ Imeratibiwa: ${schedule.toLocaleString()}`, 'info');
                     }
-                    
+
                     const feedRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/feed`, {
                         method: 'POST',
                         body: feedForm
                     });
                     const feedJson = await feedRes.json();
-                    
-                    if (feedJson.id || feedJson.post_id) {
-                        successCount++;
-                        debugLog(`✅ Imechapishwa kwenye ${page.name}`, 'success');
-                        showToast(`✅ Imechapishwa kwenye ${page.name}!`, 'success');
-                    } else {
-                        const errorMsg = feedJson.error?.message || 'Imeshindwa';
-                        errors.push(`${page.name}: ${errorMsg}`);
-                        debugLog(`❌ Imeshindwa kwenye ${page.name}: ${errorMsg}`, 'error');
-                        showToast(`❌ ${page.name}: ${errorMsg}`, 'error');
+                    if (!feedRes.ok || !(feedJson.id || feedJson.post_id)) {
+                        throw new Error(feedJson.error?.message || 'Imeshindwa kuchapisha post');
                     }
+
+                    successCount++;
+                    showToast(`✅ Imechapishwa kwenye ${page.name}!`, 'success');
                 } catch (err) {
                     errors.push(`${page.name}: ${err.message}`);
-                    debugLog(`❌ Kosa kwenye ${page.name}: ${err.message}`, 'error');
                     showToast(`❌ ${page.name}: ${err.message}`, 'error');
                 }
             }
-            
+
             btn.disabled = false;
             btn.textContent = '🚀 Chapisha kwenye Pages';
-            
+
             if (successCount > 0) {
                 showPublishStatus(`✅ Imechapishwa ${successCount}/${toPublish.length}!`, 'success');
                 await savePostToSupabase(postText);
             }
             if (errors.length > 0) {
-                setTimeout(() => showPublishStatus(`⚠️ ${errors.join(' | ')}`, 'error'), 2000);
+                showPublishStatus(`⚠️ ${errors.join(' | ')}`, 'error');
             }
         }
 
-        function showPublishStatus(msg, type) {
-            const el = document.getElementById('publishStatus');
-            el.textContent = msg;
-            el.className = `text-center text-sm mt-2 status-${type}`;
-            el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 5000);
-        }
-
-        // ========== CANVAS INTERACTION ==========
-        let dragging = null;
-        let dragLayer = null;
-
-        function getCanvasPos(cx, cy) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: (cx - rect.left) * (canvas.width / rect.width),
-                y: (cy - rect.top) * (canvas.height / rect.height)
-            };
-        }
-
-        canvas.addEventListener('mousedown', function(e) {
-            const pos = getCanvasPos(e.clientX, e.clientY);
-            
-            if (state.currentTool === 'select') {
-                for (let i = state.textOverlays.length - 1; i >= 0; i--) {
-                    const o = state.textOverlays[i];
-                    ctx.font = `${o.bold ? '900' : '400'} ${o.size}px DM Sans`;
-                    const metrics = ctx.measureText(o.text);
-                    const w = metrics.width;
-                    if (pos.x > o.x - w/2 - 15 && pos.x < o.x + w/2 + 15 &&
-                        pos.y > o.y - o.size/2 - 15 && pos.y < o.y + o.size/2 + 15) {
-                        dragging = { type: 'text', idx: i, offX: o.x - pos.x, offY: o.y - pos.y };
-                        canvas.style.cursor = 'grabbing';
-                        renderCanvas();
-                        return;
-                    }
-                }
-                for (let i = state.imageLayers.length - 1; i >= 0; i--) {
-                    const l = state.imageLayers[i];
-                    if (pos.x > l.x && pos.x < l.x + l.w && pos.y > l.y && pos.y < l.y + l.h) {
-                        dragLayer = { idx: i, offX: l.x - pos.x, offY: l.y - pos.y };
-                        canvas.style.cursor = 'grabbing';
-                        renderCanvas();
-                        return;
-                    }
-                }
-            } else if (state.currentTool === 'draw') {
-                state.isDrawing = true;
-                state.currentPath = {
-                    color: document.getElementById('drawColor').value,
-                    size: parseInt(document.getElementById('drawSize').value),
-                    points: [pos]
-                };
-                state.drawingPaths.push(state.currentPath);
-                renderCanvas();
-            } else if (state.currentTool === 'erase') {
-                state.isDrawing = true;
-                state.currentPath = {
-                    color: '#1a1a2e',
-                    size: parseInt(document.getElementById('drawSize').value) * 3,
-                    points: [pos]
-                };
-                state.drawingPaths.push(state.currentPath);
-                renderCanvas();
-            }
+        // ========== EVENT BINDINGS ==========
+        document.getElementById('drawSize').addEventListener('input', function() {
+            document.getElementById('drawSizeLabel').textContent = this.value;
         });
 
-        canvas.addEventListener('mousemove', function(e) {
-            const pos = getCanvasPos(e.clientX, e.clientY);
-            
-            if (dragging) {
-                state.textOverlays[dragging.idx].x = pos.x + dragging.offX;
-                state.textOverlays[dragging.idx].y = pos.y + dragging.offY;
-                renderCanvas();
-            } else if (dragLayer) {
-                state.imageLayers[dragLayer.idx].x = pos.x + dragLayer.offX;
-                state.imageLayers[dragLayer.idx].y = pos.y + dragLayer.offY;
-                renderCanvas();
-            } else if (state.isDrawing && state.currentPath) {
-                state.currentPath.points.push(pos);
-                renderCanvas();
-            }
+        document.getElementById('textSize').addEventListener('input', function() {
+            document.getElementById('textSizeLabel').textContent = this.value;
         });
 
-        canvas.addEventListener('mouseup', function() {
-            dragging = null;
-            dragLayer = null;
-            state.isDrawing = false;
-            state.currentPath = null;
-            canvas.style.cursor = state.currentTool === 'select' ? 'grab' : 'crosshair';
+        ['adjBrightness','adjContrast','adjSaturation','adjHue','adjBlur','adjGray','adjSepia','adjOpacity','adjRotation'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', applyAdjustmentFromInputs);
+            el.addEventListener('change', pushHistory);
         });
 
-        canvas.addEventListener('mouseleave', function() {
-            dragging = null;
-            dragLayer = null;
-            state.isDrawing = false;
-            state.currentPath = null;
+        document.getElementById('fitMode').addEventListener('change', function() {
+            state.baseTransform.fitMode = this.value;
+            renderCanvas();
+            pushHistory();
         });
-
-        // Touch support
-        canvas.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            const t = e.touches[0];
-            const me = new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY });
-            canvas.dispatchEvent(me);
-        }, { passive: false });
-
-        canvas.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-            const t = e.touches[0];
-            const me = new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY });
-            canvas.dispatchEvent(me);
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            const me = new MouseEvent('mouseup', {});
-            canvas.dispatchEvent(me);
-        }, { passive: false });
 
         // ========== INIT ==========
         loadFromLocalStorage();
-        renderCanvas();
         renderPages();
+        renderLayersList();
+        updateSelectedLayerInfo();
+        syncAdjustmentInputs();
+        syncFitModeInput();
         setTool('select');
-        
-        debugLog('🚀 AI Poster Pro imeanzishwa!', 'success');
-        debugLog('💾 Data inahifadhiwa kwenye localStorage', 'info');
-        
-        console.log('🌿 AI Poster Pro imeanzishwa!');
-        console.log('✅ Tatizo la tainted canvas limetatuliwa!');
+        renderCanvas();
+        pushHistory();
+
+        debugLog('🚀 AI Poster Pro imeanza', 'success');
+        debugLog('🛡️ Export now follows render pipeline + CORS checks', 'info');
     </script>
 </body>
 </html>
