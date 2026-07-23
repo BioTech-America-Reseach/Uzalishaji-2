@@ -299,6 +299,8 @@
         const CANVAS_H = 630;
         const TEXT_FALLBACK = 'DM Sans, Inter, Roboto, Arial, sans-serif';
         const HISTORY_LIMIT = 60;
+        const DEFAULT_REQUEST_TIMEOUT = 30000;
+        const IMAGE_LOAD_TIMEOUT = 20000;
 
         const STYLE_PRESETS = {
             product: 'product photo, clean studio lighting, realistic texture, premium commercial look',
@@ -415,12 +417,35 @@
             return `brightness(${a.brightness}%) contrast(${a.contrast}%) saturate(${a.saturation}%) hue-rotate(${a.hue}deg) blur(${a.blur}px) grayscale(${a.grayscale}%) sepia(${a.sepia}%) opacity(${a.opacity}%)`;
         }
 
+        function fetchWithTimeout(url, options = {}, { timeout = DEFAULT_REQUEST_TIMEOUT, label = 'Huduma' } = {}) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(new Error(`${label} imechukua muda mrefu sana.`)), timeout);
+            return fetch(url, { ...options, signal: controller.signal })
+                .catch(err => {
+                    if (err.name === 'AbortError') {
+                        throw new Error(`${label} haikujibu kwa muda. Jaribu tena baadaye.`);
+                    }
+                    if (err instanceof TypeError || /Failed to fetch/i.test(err.message || '')) {
+                        throw new Error(`${label} haipatikani sasa au imezuiwa na mtandao/CORS.`);
+                    }
+                    throw err;
+                })
+                .finally(() => clearTimeout(timer));
+        }
+
         function loadImage(src, crossOrigin = false) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
+                const timer = setTimeout(() => reject(new Error('Kupakia picha kumechukua muda mrefu sana.')), IMAGE_LOAD_TIMEOUT);
                 if (crossOrigin) img.crossOrigin = 'anonymous';
-                img.onload = () => resolve(img);
-                img.onerror = () => reject(new Error('Imeshindwa kupakia picha'));
+                img.onload = () => {
+                    clearTimeout(timer);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    clearTimeout(timer);
+                    reject(new Error('Imeshindwa kupakia picha'));
+                };
                 img.src = src;
             });
         }
@@ -930,7 +955,7 @@
         }
 
         async function fetchImageAsDataUrl(url) {
-            const res = await fetch(url, { method: 'GET', mode: 'cors' });
+            const res = await fetchWithTimeout(url, { method: 'GET', mode: 'cors' }, { timeout: 45000, label: 'Huduma ya picha' });
             if (!res.ok) throw new Error('Download ya picha imeshindikana');
             const blob = await res.blob();
             return await new Promise((resolve, reject) => {
@@ -1040,13 +1065,17 @@
                     debugLog('✅ Picha imeletwa kama data URL salama kwa export', 'success');
                 } catch (fetchErr) {
                     debugLog('⚠️ Fallback kwenye remote image: ' + fetchErr.message, 'warn');
-                    img = await ensureImageFromCache(url.toString(), true);
-                    const probe = document.createElement('canvas');
-                    probe.width = 2;
-                    probe.height = 2;
-                    const pctx = probe.getContext('2d');
-                    pctx.drawImage(img, 0, 0, 2, 2);
-                    exportSafe = await verifyCanvasExportable(probe);
+                    try {
+                        img = await ensureImageFromCache(url.toString(), true);
+                        const probe = document.createElement('canvas');
+                        probe.width = 2;
+                        probe.height = 2;
+                        const pctx = probe.getContext('2d');
+                        pctx.drawImage(img, 0, 0, 2, 2);
+                        exportSafe = await verifyCanvasExportable(probe);
+                    } catch (remoteErr) {
+                        throw new Error('Huduma ya kutengeneza picha haipatikani au imezuiwa na CORS. Jaribu tena baadaye, au pakia picha kutoka kwenye kifaa chako.');
+                    }
                 }
 
                 await setBaseImage(img, srcForState, { remote: true, exportSafe });
@@ -1474,7 +1503,7 @@
             const apiKey = document.getElementById('apiKey').value.trim();
             if (!apiKey) throw new Error('Weka API Key');
 
-            const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+            const res = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1484,7 +1513,7 @@
                     model: 'mistral-small-latest',
                     messages
                 })
-            });
+            }, { label: 'Mistral AI' });
 
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -1740,12 +1769,9 @@
                     const mins = Math.floor((diff % 3600000) / 60000);
                     el.textContent = `⏳ Muda uliobaki: ${hours}h ${mins}m`;
                     el.style.color = '#fbbf24';
-                } else if (diff > -60000) {
-                    el.textContent = '🔴 Inachapishwa sasa...';
-                    el.style.color = '#4ade80';
                 } else {
-                    el.textContent = '✅ Imechapishwa';
-                    el.style.color = '#4ade80';
+                    el.textContent = '⏰ Muda umepita — thibitisha hali kwenye Facebook Page yako kabla ya kudhani imechapishwa.';
+                    el.style.color = '#fbbf24';
                 }
             });
         }
@@ -1794,9 +1820,9 @@
             const supabaseKey = document.getElementById('supabaseKey').value.trim();
             if (!supabaseUrl || !supabaseKey) return;
             try {
-                const res = await fetch(supabaseUrl + '/rest/v1/posts?order=created_at.desc&limit=30', {
+                const res = await fetchWithTimeout(supabaseUrl + '/rest/v1/posts?order=created_at.desc&limit=30', {
                     headers: { apikey: supabaseKey, Authorization: 'Bearer ' + supabaseKey }
-                });
+                }, { timeout: 15000, label: 'Supabase' });
                 if (!res.ok) {
                     debugLog(`⚠️ Supabase load error ${res.status}`, 'warn');
                     return;
@@ -1813,7 +1839,7 @@
             const supabaseKey = document.getElementById('supabaseKey').value.trim();
             if (!supabaseUrl || !supabaseKey) return;
             try {
-                const res = await fetch(supabaseUrl + '/rest/v1/posts', {
+                const res = await fetchWithTimeout(supabaseUrl + '/rest/v1/posts', {
                     method: 'POST',
                     headers: {
                         apikey: supabaseKey,
@@ -1822,7 +1848,7 @@
                         Prefer: 'return=minimal'
                     },
                     body: JSON.stringify({ content, created_at: new Date().toISOString() })
-                });
+                }, { timeout: 15000, label: 'Supabase' });
                 if (!res.ok) {
                     debugLog(`⚠️ Supabase save error ${res.status}`, 'warn');
                     return;
@@ -1851,7 +1877,8 @@
             btn.disabled = true;
             btn.textContent = '⏳ Inachapisha...';
 
-            let successCount = 0;
+            let publishedNowCount = 0;
+            let scheduledCount = 0;
             const errors = [];
             const toPublish = [];
 
@@ -1889,10 +1916,10 @@
                         photoForm.append('access_token', page.token);
                         photoForm.append('published', 'false');
 
-                        const photoRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
+                        const photoRes = await fetchWithTimeout(`https://graph.facebook.com/v19.0/${page.id}/photos`, {
                             method: 'POST',
                             body: photoForm
-                        });
+                        }, { label: 'Facebook upload' });
                         const photoJson = await photoRes.json();
                         if (!photoRes.ok || !photoJson.id) {
                             throw new Error(photoJson.error?.message || 'Upload ya picha imeshindikana');
@@ -1907,22 +1934,28 @@
 
                     const now = new Date();
                     const minScheduleTime = new Date(now.getTime() + 10 * 60000);
-                    if (schedule >= minScheduleTime) {
+                    const shouldSchedule = schedule >= minScheduleTime;
+                    if (shouldSchedule) {
                         feedForm.append('scheduled_publish_time', Math.floor(schedule.getTime() / 1000));
                         feedForm.append('published', 'false');
                     }
 
-                    const feedRes = await fetch(`https://graph.facebook.com/v19.0/${page.id}/feed`, {
+                    const feedRes = await fetchWithTimeout(`https://graph.facebook.com/v19.0/${page.id}/feed`, {
                         method: 'POST',
                         body: feedForm
-                    });
+                    }, { label: 'Facebook publish' });
                     const feedJson = await feedRes.json();
                     if (!feedRes.ok || !(feedJson.id || feedJson.post_id)) {
                         throw new Error(feedJson.error?.message || 'Imeshindwa kuchapisha post');
                     }
 
-                    successCount++;
-                    showToast(`✅ Imechapishwa kwenye ${page.name}!`, 'success');
+                    if (shouldSchedule) {
+                        scheduledCount++;
+                        showToast(`✅ Post imepangwa kwenye ${page.name}!`, 'success');
+                    } else {
+                        publishedNowCount++;
+                        showToast(`✅ Imechapishwa kwenye ${page.name}!`, 'success');
+                    }
                 } catch (err) {
                     errors.push(`${page.name}: ${err.message}`);
                     showToast(`❌ ${page.name}: ${err.message}`, 'error');
@@ -1932,8 +1965,11 @@
             btn.disabled = false;
             btn.textContent = '🚀 Chapisha kwenye Pages';
 
-            if (successCount > 0) {
-                showPublishStatus(`✅ Imechapishwa ${successCount}/${toPublish.length}!`, 'success');
+            if (publishedNowCount > 0 || scheduledCount > 0) {
+                const parts = [];
+                if (publishedNowCount > 0) parts.push(`${publishedNowCount} zimechapishwa sasa`);
+                if (scheduledCount > 0) parts.push(`${scheduledCount} zimepangwa`);
+                showPublishStatus(`✅ Zimetumwa kwa mafanikio: ${parts.join(', ')}.`, 'success');
                 await savePostToSupabase(postText);
             }
             if (errors.length > 0) {
