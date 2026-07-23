@@ -15,6 +15,7 @@
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-secondary { background: rgba(255,255,255,0.1); color: white; padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s; font-size: 13px; }
         .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-secondary.active-toggle { background: #4ade80; color: #0f172a; border-color: #4ade80; }
         .btn-danger { background: rgba(220,38,38,0.6); color: white; padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s; font-size: 13px; }
         .btn-danger:hover { background: rgba(220,38,38,0.8); }
         input, textarea, select { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: white; width: 100%; font-size: 14px; }
@@ -23,8 +24,8 @@
         input[type="range"] { padding: 0; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #4ade80; cursor: pointer; }
         .canvas-scroll { overflow: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .canvas-container { position: relative; border-radius: 12px; background: rgba(0,0,0,0.3); min-height: 300px; width: 100%; max-width: 100%; }
-        .canvas-container canvas { display: block; touch-action: none; }
+        .canvas-container { position: relative; border-radius: 12px; background: rgba(0,0,0,0.3); min-height: 300px; width: 100%; max-width: 100%; overflow: hidden; }
+        .canvas-container canvas { display: block; touch-action: none; transform-origin: top left; }
         .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 14px; margin: 4px 0; white-space: pre-wrap; word-wrap: break-word; }
         .chat-user { background: #16a34a; color: white; align-self: flex-end; }
         .chat-ai { background: rgba(255,255,255,0.08); color: #e5e7eb; align-self: flex-start; }
@@ -57,6 +58,19 @@
         .row-2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
         .row-3 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
         .small-label { color: #9ca3af; font-size: 11px; margin-bottom: 2px; display: block; }
+        .hint-text { color: #94a3b8; font-size: 11px; margin-top: 4px; }
+        .shape-btn { background: rgba(255,255,255,0.08); color: #aaa; padding: 8px 6px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all 0.3s; font-size: 11px; text-align: center; }
+        .shape-btn.active-shape { background: #4ade80; color: #0f172a; border-color: #4ade80; }
+        .timeline-step { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; font-size: 12px; margin-bottom: 4px; border-left: 3px solid transparent; }
+        .timeline-active { background: rgba(96,165,250,0.1); border-left-color: #60a5fa; color: #93c5fd; }
+        .timeline-done { background: rgba(74,222,128,0.1); border-left-color: #4ade80; color: #86efac; }
+        .timeline-error { background: rgba(248,113,113,0.1); border-left-color: #f87171; color: #fca5a5; }
+        .timeline-pending { background: rgba(251,191,36,0.1); border-left-color: #fbbf24; color: #fde68a; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .modal-overlay.hidden { display: none; }
+        .modal-box { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 20px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .job-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; background: rgba(0,0,0,0.25); margin-bottom: 8px; font-size: 12px; }
+        .comment-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; background: rgba(0,0,0,0.25); margin-bottom: 8px; }
         @media (max-width: 640px) {
             .schedule-grid, .row-2, .row-3 { grid-template-columns: 1fr; }
             body { padding: 10px; }
@@ -66,6 +80,26 @@
 </head>
 <body>
     <div id="toast" class="toast hidden"></div>
+    <div id="approvalModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 class="text-white font-bold text-lg mb-2">📋 Kagua Mpango wa AI</h3>
+            <p class="text-xs mb-3" style="color:#fbbf24;">⚠️ AI inaweza kukosea. Kagua kila kitu kabla ya kuchapisha.</p>
+            <div class="space-y-2">
+                <div><label class="small-label">Caption</label><textarea id="planCaption" rows="4"></textarea></div>
+                <div><label class="small-label">Image Prompt</label><textarea id="planImagePrompt" rows="2"></textarea></div>
+                <div><label class="small-label">Negative Prompt</label><input type="text" id="planNegativePrompt"></div>
+                <div class="row-2">
+                    <div><label class="small-label">Format</label><input type="text" id="planFormatDisplay" disabled></div>
+                    <div><label class="small-label">Ratiba (scheduled_at)</label><input type="text" id="planScheduledDisplay" disabled></div>
+                </div>
+                <div><label class="small-label">Call To Action</label><input type="text" id="planCta"></div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="approveContentPlan()" class="btn-primary flex-1">✅ Idhini na Chapisha</button>
+                <button onclick="closeApprovalModal()" class="btn-danger">🗑️ Futa</button>
+            </div>
+        </div>
+    </div>
     <div class="max-w-6xl mx-auto space-y-4">
         <header class="text-center fade-up">
             <h1 class="text-3xl md:text-4xl font-black" style="color: #4ade80;">🌿 AI Facebook Poster + Picha</h1>
@@ -78,6 +112,11 @@
                 <div><label class="text-gray-300 text-sm block mb-1">🔑 AI API Key (Mistral)</label><input type="password" id="apiKey" placeholder="Ingiza API key yako..."></div>
                 <div><label class="text-gray-300 text-sm block mb-1">🗄️ Supabase URL</label><input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co"></div>
                 <div><label class="text-gray-300 text-sm block mb-1">🔐 Supabase Anon Key</label><input type="password" id="supabaseKey" placeholder="Supabase anon key..."></div>
+                <div>
+                    <label class="text-gray-300 text-sm block mb-1">🌐 Backend Endpoint</label>
+                    <input type="text" id="backendEndpoint" placeholder="https://your-backend.com/api">
+                    <p class="hint-text">💡 Backend inahitajika kwa video upload na scheduling ya kuaminika nje ya browser. URL hii inahitajika kwa video upload na scheduling ya kuaminika. Bila hii, kazi zitaandikwa kama "DEMO TU" na hazitatumwa.</p>
+                </div>
                 <button onclick="saveSettings()" class="btn-primary w-full">💾 Hifadhi Settings</button>
                 <div id="settingsStatus" class="text-sm text-center hidden"></div>
                 <hr class="border-white/10">
@@ -89,16 +128,61 @@
                     <input type="password" id="pageToken" placeholder="Access Token">
                     <button onclick="addPage()" class="btn-primary w-full" style="background: #2563eb;">➕ Ongeza Page</button>
                 </div>
+                <hr class="border-white/10">
+                <h3 class="text-white font-bold text-center">🧠 AI Memory</h3>
+                <p class="hint-text">Kumbukumbu ni za kibinafsi. Unaweza kuziona, kuzihariri, na kuzifuta.</p>
+                <div><label class="text-gray-300 text-sm block mb-1">Mtindo wa kuandika</label><input type="text" id="memTone" placeholder="mf: Rasmi, Burudani..."></div>
+                <div><label class="text-gray-300 text-sm block mb-1">Maelezo ya biashara</label><textarea id="memBusiness" rows="2" placeholder="Eleza biashara yako..."></textarea></div>
+                <div><label class="text-gray-300 text-sm block mb-1">Maelekezo ya ziada</label><textarea id="memInstructions" rows="2" placeholder="Maelekezo mengine kwa AI..."></textarea></div>
+                <div class="flex gap-2">
+                    <button onclick="saveAIMemory()" class="btn-primary flex-1">💾 Hifadhi Kumbukumbu</button>
+                    <button onclick="clearAIMemory()" class="btn-danger">🗑️ Futa Kumbukumbu</button>
+                </div>
+                <div id="memoryStatus" class="text-sm text-center hidden"></div>
             </div>
         </details>
 
         <section class="glass p-4">
             <h2 class="text-white font-bold text-center text-lg">💬 Ongea na AI — Andaa Post</h2>
+            <div class="flex justify-center mt-3">
+                <button onclick="togglePlanMode()" id="planModeBtn" class="btn-secondary">🗓️ Mpango wa Post</button>
+            </div>
             <div id="chatMessages" class="space-y-2 max-h-60 overflow-y-auto pr-1 mt-3"></div>
             <form onsubmit="sendMessage(event)" class="flex gap-2 mt-3">
                 <input type="text" id="chatInput" placeholder="Mfano: Andaa posti kuhusu biashara yangu..." class="flex-1">
                 <button type="submit" class="btn-primary px-4">📤</button>
             </form>
+
+            <div id="planModeForm" class="hidden mt-3 border border-white/10 rounded-lg p-3 space-y-2">
+                <div class="panel-title">🗓️ Mpango wa Post (AI Content Plan)</div>
+                <div><label class="small-label">Mada ya post</label><input type="text" id="planTopic" placeholder="mf: Ofa ya wiki hii..."></div>
+                <div class="row-2">
+                    <div>
+                        <label class="small-label">Platform</label>
+                        <select id="planPlatform">
+                            <option value="fb-feed">Facebook Feed</option>
+                            <option value="ig-square">Instagram Square</option>
+                            <option value="ig-portrait">Instagram Portrait</option>
+                            <option value="tiktok">TikTok/Reels</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="small-label">Mtindo (style)</label>
+                        <select id="planStyle">
+                            <option value="casual">Casual</option>
+                            <option value="professional">Professional</option>
+                            <option value="funny">Funny</option>
+                            <option value="emotional">Emotional</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-2">
+                    <div><label class="small-label">Tarehe</label><input type="date" id="planDate"></div>
+                    <div><label class="small-label">Saa</label><input type="time" id="planTime"></div>
+                </div>
+                <button onclick="generateContentPlan()" class="btn-primary w-full" style="background:linear-gradient(135deg,#9333ea,#db2777);">✨ Tengeneza Mpango</button>
+                <div id="aiTimeline" class="mt-2"></div>
+            </div>
         </section>
 
         <section class="glass p-4">
@@ -113,6 +197,24 @@
 
         <section class="glass p-4">
             <h2 class="text-white font-bold text-center text-lg">🖼️ Picha — AI Generate, Draw &amp; Full Edit</h2>
+
+            <div class="border border-white/10 rounded-lg p-3 mt-3 space-y-2">
+                <div class="panel-title">📐 Format / Platform</div>
+                <div class="row-2">
+                    <select id="formatSelect" onchange="setFormat(this.value)">
+                        <option value="fb-feed">Facebook Feed (1200×630)</option>
+                        <option value="ig-square">Instagram Square (1080×1080)</option>
+                        <option value="ig-portrait">Instagram Portrait (1080×1350)</option>
+                        <option value="tiktok">TikTok/Reels (1080×1920)</option>
+                        <option value="custom">Custom...</option>
+                    </select>
+                    <div id="customFormatInputs" class="row-2 hidden">
+                        <input type="number" id="customW" placeholder="Upana (px)" min="100" max="4000" value="1200">
+                        <input type="number" id="customH" placeholder="Urefu (px)" min="100" max="4000" value="630">
+                    </div>
+                </div>
+                <button onclick="setFormat(document.getElementById('formatSelect').value)" id="applyCustomFormatBtn" class="btn-secondary w-full hidden">✅ Tumia Custom Size</button>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
                 <div>
@@ -165,6 +267,29 @@
             </div>
 
             <div class="border border-white/10 rounded-lg p-3 mt-3 space-y-2">
+                <div class="panel-title">🔷 Umbo (Shapes)</div>
+                <p class="hint-text">💡 Chagua umbo, ongeza, kisha gusa canvas kuisogeza.</p>
+                <div class="row-3" style="grid-template-columns:repeat(6,minmax(0,1fr));">
+                    <button type="button" class="shape-btn active-shape" data-shape="rect" onclick="setShapeType('rect')">▭<br>Mstatili</button>
+                    <button type="button" class="shape-btn" data-shape="rounded-rect" onclick="setShapeType('rounded-rect')">▢<br>Mst-pande-zote</button>
+                    <button type="button" class="shape-btn" data-shape="circle" onclick="setShapeType('circle')">⚪<br>Duara</button>
+                    <button type="button" class="shape-btn" data-shape="line" onclick="setShapeType('line')">➖<br>Mstari</button>
+                    <button type="button" class="shape-btn" data-shape="arrow" onclick="setShapeType('arrow')">➡️<br>Mishale</button>
+                    <button type="button" class="shape-btn" data-shape="triangle" onclick="setShapeType('triangle')">🔺<br>Pembetatu</button>
+                </div>
+                <div class="row-2">
+                    <div><label class="small-label">Fill Color</label><input type="color" id="shapeFillColor" value="#4ade80"></div>
+                    <div><label class="small-label">Fill Opacity</label><input type="range" id="shapeFillOpacity" min="0" max="100" value="80"></div>
+                </div>
+                <div class="row-2">
+                    <div><label class="small-label">Stroke Color</label><input type="color" id="shapeStrokeColor" value="#ffffff"></div>
+                    <div><label class="small-label">Stroke Width</label><input type="range" id="shapeStrokeWidth" min="0" max="20" value="2"></div>
+                </div>
+                <div><label class="small-label">Corner Radius (rounded-rect)</label><input type="range" id="shapeCornerRadius" min="0" max="100" value="10"></div>
+                <button onclick="addShapeLayer()" class="btn-primary w-full" style="background:#2563eb;">➕ Ongeza Umbo</button>
+            </div>
+
+            <div class="border border-white/10 rounded-lg p-3 mt-3 space-y-2">
                 <div class="panel-title">Base image adjustments (non-destructive)</div>
                 <div class="row-3">
                     <div><label class="small-label">Brightness</label><input id="adjBrightness" type="range" min="0" max="200" value="100"></div>
@@ -197,6 +322,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
                 <div class="border border-white/10 rounded-lg p-3 space-y-2">
                     <div class="panel-title">✍️ Text editor (ikiwemo 3D)</div>
+                    <p class="hint-text">💡 Badilisha controls — picha itabadilika mara moja (live preview).</p>
                     <input type="text" id="overlayText" placeholder="Andika text hapa...">
                     <div class="row-3">
                         <div><label class="small-label">Rangi</label><input type="color" id="textColor" value="#ffffff"></div>
@@ -268,11 +394,12 @@
                     </div>
                     <div class="text-xs text-gray-400" id="selectedLayerInfo">Hakuna layer iliyochaguliwa</div>
                     <div id="layersList" class="space-y-1 max-h-40 overflow-y-auto"></div>
-                    <p class="text-xs text-gray-500">Tip: Select mode kisha gusa/bonyeza layer. Kwa image layer: drag kusogeza, handles kubadili size, duara la juu ku-rotate.</p>
+                    <p class="text-xs text-gray-500">Tip: Select mode kisha gusa/bonyeza layer. Kwa image/shape layer: drag kusogeza, handles kubadili size, duara la juu ku-rotate.</p>
                 </div>
             </div>
 
-            <div class="canvas-scroll mt-3">
+            <p class="hint-text text-center">💡 Vidole 2: pinch ku-zoom. Kidole 1: sogeza. Corner handles: resize. Duara ya juu: rotate.</p>
+            <div class="canvas-scroll mt-1">
                 <div class="canvas-container" id="canvasContainer">
                     <canvas id="mainCanvas" width="1200" height="630"></canvas>
                 </div>
@@ -291,14 +418,58 @@
             <button onclick="publishPost()" class="btn-primary w-full mt-3" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);">🚀 Chapisha kwenye Pages</button>
             <div id="publishStatus" class="text-center text-sm hidden mt-3"></div>
         </section>
+
+        <details class="glass p-4">
+            <summary class="cursor-pointer font-bold text-white text-lg flex items-center gap-2">🎬 Video Post</summary>
+            <div class="mt-4 space-y-3">
+                <p class="hint-text">⚠️ Browser haiwezi kupakia video moja kwa moja kwa API za platform. Weka Backend Endpoint kwenye settings. Kazi itaandikwa na kutumwa kwa backend iliyowekwa.</p>
+                <div>
+                    <label class="text-gray-300 text-sm block mb-1">📁 Pakia Video</label>
+                    <input type="file" id="videoUpload" accept="video/*" class="file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white file:font-semibold file:cursor-pointer file:text-sm">
+                </div>
+                <div id="videoMeta" class="text-xs text-gray-400"></div>
+                <video id="videoPreview" class="hidden" muted></video>
+                <div><label class="text-gray-300 text-sm block mb-1">Caption</label><textarea id="videoCaption" rows="3" placeholder="Andika caption ya video..."></textarea></div>
+                <div class="row-2">
+                    <div>
+                        <label class="small-label">Page</label>
+                        <select id="videoPage"></select>
+                    </div>
+                    <div class="row-2">
+                        <input type="date" id="videoDate">
+                        <input type="time" id="videoTime">
+                    </div>
+                </div>
+                <button onclick="submitVideoJob()" class="btn-primary w-full">➕ Ongeza Kwenye Foleni</button>
+                <div id="videoJobsList" class="mt-2"></div>
+            </div>
+        </details>
+
+        <details class="glass p-4">
+            <summary class="cursor-pointer font-bold text-white text-lg flex items-center gap-2">💬 Inbox ya Maoni</summary>
+            <div class="mt-4 space-y-3">
+                <p class="hint-text">⚠️ Jibu kila maoni wewe mwenyewe. Hakuna auto-reply, auto-like, au auto-comment. Hii inakiuka kanuni za platform.</p>
+                <p class="hint-text">Huduma ya auto-like haijawekwa kwa sababu inakiuka kanuni za Facebook na platform nyingine.</p>
+                <button id="loadCommentsBtn" onclick="loadComments()" class="btn-primary w-full">🔄 Pakia Maoni</button>
+                <p class="hint-text">Maoni yanafika kwa muda tu. Bonyeza Refresh kupata mapya.</p>
+                <div id="commentsList" class="mt-2"></div>
+            </div>
+        </details>
     </div>
 
     <script>
         // ========== STATE ==========
-        const CANVAS_W = 1200;
-        const CANVAS_H = 630;
+        let canvasW = 1200;
+        let canvasH = 630;
         const TEXT_FALLBACK = 'DM Sans, Inter, Roboto, Arial, sans-serif';
         const HISTORY_LIMIT = 60;
+
+        const FORMAT_PRESETS = {
+            'fb-feed': { w: 1200, h: 630 },
+            'ig-square': { w: 1080, h: 1080 },
+            'ig-portrait': { w: 1080, h: 1350 },
+            'tiktok': { w: 1080, h: 1920 }
+        };
 
         const STYLE_PRESETS = {
             product: 'product photo, clean studio lighting, realistic texture, premium commercial look',
@@ -315,6 +486,7 @@
             conversation: [],
             pastPosts: [],
             currentTool: 'select',
+            currentShapeType: 'rect',
             canvasImage: null,
             canvasImageSrc: null,
             canvasImageRemote: false,
@@ -341,7 +513,12 @@
             history: [],
             historyIndex: -1,
             loadingInterval: null,
-            countdownInterval: null
+            countdownInterval: null,
+            aiTimeline: [],
+            aiMemory: { tone: '', business: '', instructions: '' },
+            currentPlan: null,
+            videoJobs: [],
+            comments: []
         };
 
         const imageCache = new Map();
@@ -375,6 +552,15 @@
             return Math.max(min, Math.min(max, v));
         }
 
+        function getLayerBoxAndCenter(layer) {
+            if (layer.type === 'text') {
+                const bounds = getTextLayerBounds(layer);
+                return { w: bounds.w, h: bounds.h, cx: layer.x, cy: layer.y };
+            }
+            // image or shape
+            return { w: layer.w, h: layer.h, cx: layer.x + layer.w / 2, cy: layer.y + layer.h / 2 };
+        }
+
         function updateSelectedLayerInfo() {
             const info = document.getElementById('selectedLayerInfo');
             if (!state.selectedLayerId) {
@@ -388,6 +574,8 @@
             }
             if (layer.type === 'text') {
                 info.textContent = `Selected: Text — "${layer.text.slice(0, 24)}${layer.text.length > 24 ? '...' : ''}"`;
+            } else if (layer.type === 'shape') {
+                info.textContent = `Shape: ${layer.shapeType} (${Math.round(layer.w)}×${Math.round(layer.h)})`;
             } else {
                 info.textContent = `Selected: Image layer (${Math.round(layer.w)}×${Math.round(layer.h)})`;
             }
@@ -445,6 +633,7 @@
 
         function serializeStateForHistory() {
             return {
+                canvasW, canvasH,
                 canvasImageSrc: state.canvasImageSrc,
                 canvasImageRemote: state.canvasImageRemote,
                 canvasImageExportSafe: state.canvasImageExportSafe,
@@ -463,6 +652,13 @@
         }
 
         async function restoreFromSnapshot(snapshot) {
+            if (snapshot.canvasW && snapshot.canvasH) {
+                canvasW = snapshot.canvasW;
+                canvasH = snapshot.canvasH;
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+                scaleCanvasToFit();
+            }
             state.canvasImageSrc = snapshot.canvasImageSrc || null;
             state.canvasImageRemote = !!snapshot.canvasImageRemote;
             state.canvasImageExportSafe = snapshot.canvasImageExportSafe !== false;
@@ -533,55 +729,92 @@
             showImageStatus('↪️ Redo', 'info');
         }
 
+        // ========== FORMAT / SCALING ==========
+        function setFormat(key) {
+            let w, h;
+            if (key === 'custom') {
+                w = clamp(Number(document.getElementById('customW').value) || 1200, 100, 4000);
+                h = clamp(Number(document.getElementById('customH').value) || 630, 100, 4000);
+                document.getElementById('customFormatInputs').classList.remove('hidden');
+                document.getElementById('applyCustomFormatBtn').classList.remove('hidden');
+            } else {
+                const preset = FORMAT_PRESETS[key] || FORMAT_PRESETS['fb-feed'];
+                w = preset.w;
+                h = preset.h;
+                document.getElementById('customFormatInputs').classList.add('hidden');
+                document.getElementById('applyCustomFormatBtn').classList.add('hidden');
+            }
+            canvasW = w;
+            canvasH = h;
+            canvas.width = canvasW;
+            canvas.height = canvasH;
+            document.getElementById('formatSelect').value = key;
+            scaleCanvasToFit();
+            renderCanvas();
+            pushHistory();
+        }
+
+        function scaleCanvasToFit() {
+            const container = document.getElementById('canvasContainer');
+            const scrollBox = container.parentElement;
+            const availableWidth = (scrollBox && scrollBox.clientWidth ? scrollBox.clientWidth : container.clientWidth) || canvasW;
+            const scale = Math.min(1, availableWidth / canvasW);
+            canvas.style.transform = `scale(${scale})`;
+            container.style.width = `${canvasW * scale}px`;
+            container.style.height = `${canvasH * scale}px`;
+        }
+
+        window.addEventListener('resize', scaleCanvasToFit);
+
         // ========== RENDER ==========
         function getBaseImageDrawRect() {
-            if (!state.canvasImage) return { x: 0, y: 0, w: CANVAS_W, h: CANVAS_H };
+            if (!state.canvasImage) return { x: 0, y: 0, w: canvasW, h: canvasH };
             const img = state.canvasImage;
-            const canvasRatio = CANVAS_W / CANVAS_H;
+            const canvasRatio = canvasW / canvasH;
             const imgRatio = img.width / img.height;
             let w, h;
             if (state.baseTransform.fitMode === 'contain') {
                 if (imgRatio > canvasRatio) {
-                    w = CANVAS_W;
+                    w = canvasW;
                     h = w / imgRatio;
                 } else {
-                    h = CANVAS_H;
+                    h = canvasH;
                     w = h * imgRatio;
                 }
             } else {
                 if (imgRatio > canvasRatio) {
-                    h = CANVAS_H;
+                    h = canvasH;
                     w = h * imgRatio;
                 } else {
-                    w = CANVAS_W;
+                    w = canvasW;
                     h = w / imgRatio;
                 }
             }
-            return { x: (CANVAS_W - w) / 2, y: (CANVAS_H - h) / 2, w, h };
+            return { x: (canvasW - w) / 2, y: (canvasH - h) / 2, w, h };
         }
 
         function drawBaseImage(targetCtx) {
             if (!state.canvasImage) {
-                const g = targetCtx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+                const g = targetCtx.createLinearGradient(0, 0, canvasW, canvasH);
                 g.addColorStop(0, '#1a1a2e');
                 g.addColorStop(1, '#16213e');
                 targetCtx.fillStyle = g;
-                targetCtx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                targetCtx.fillRect(0, 0, canvasW, canvasH);
                 targetCtx.fillStyle = '#7f8ea3';
                 targetCtx.font = '26px DM Sans';
                 targetCtx.textAlign = 'center';
-                targetCtx.fillText('📸 Pakia au zalisha picha', CANVAS_W / 2, CANVAS_H / 2);
+                targetCtx.fillText('📸 Pakia au zalisha picha', canvasW / 2, canvasH / 2);
                 return;
             }
 
             const rect = getBaseImageDrawRect();
             targetCtx.save();
             targetCtx.filter = buildFilterString();
-            targetCtx.translate(CANVAS_W / 2 + state.baseTransform.x, CANVAS_H / 2 + state.baseTransform.y);
+            targetCtx.translate(canvasW / 2 + state.baseTransform.x, canvasH / 2 + state.baseTransform.y);
             const finalRotation = (state.baseTransform.rotation + state.adjustments.rotation) * Math.PI / 180;
             targetCtx.rotate(finalRotation);
             targetCtx.scale(state.baseTransform.scale, state.baseTransform.scale);
-            targetCtx.drawImage(state.canvasImage, rect.x - CANVAS_W / 2, rect.y - CANVAS_H / 2, rect.w, rect.h);
+            targetCtx.drawImage(state.canvasImage, rect.x - canvasW / 2, rect.y - canvasH / 2, rect.w, rect.h);
             targetCtx.restore();
         }
 
@@ -693,6 +926,109 @@
             targetCtx.restore();
         }
 
+        function drawRoundRect(targetCtx, x, y, w, h, r) {
+            const radius = Math.max(0, Math.min(r, Math.min(w, h) / 2));
+            targetCtx.beginPath();
+            targetCtx.moveTo(x + radius, y);
+            targetCtx.arcTo(x + w, y, x + w, y + h, radius);
+            targetCtx.arcTo(x + w, y + h, x, y + h, radius);
+            targetCtx.arcTo(x, y + h, x, y, radius);
+            targetCtx.arcTo(x, y, x + w, y, radius);
+            targetCtx.closePath();
+        }
+
+        function drawShapeLayer(targetCtx, layer) {
+            targetCtx.save();
+            targetCtx.translate(layer.x + layer.w / 2, layer.y + layer.h / 2);
+            targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
+            const w = layer.w, h = layer.h;
+            const hasFill = layer.fillOpacity > 0;
+            const hasStroke = (layer.strokeWidth || 0) > 0;
+
+            function applyFillAndStroke(path) {
+                if (hasFill) {
+                    targetCtx.globalAlpha = layer.fillOpacity;
+                    targetCtx.fillStyle = layer.fillColor;
+                    path();
+                    targetCtx.fill();
+                }
+                if (hasStroke) {
+                    targetCtx.globalAlpha = 1;
+                    targetCtx.strokeStyle = layer.strokeColor;
+                    targetCtx.lineWidth = layer.strokeWidth;
+                    path();
+                    targetCtx.stroke();
+                }
+            }
+
+            switch (layer.shapeType) {
+                case 'rounded-rect':
+                    applyFillAndStroke(() => drawRoundRect(targetCtx, -w / 2, -h / 2, w, h, layer.cornerRadius || 0));
+                    break;
+                case 'circle':
+                    applyFillAndStroke(() => {
+                        targetCtx.beginPath();
+                        targetCtx.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2);
+                    });
+                    break;
+                case 'line':
+                    targetCtx.globalAlpha = 1;
+                    targetCtx.strokeStyle = layer.strokeColor;
+                    targetCtx.lineWidth = layer.strokeWidth || 2;
+                    targetCtx.beginPath();
+                    targetCtx.moveTo(-w / 2, 0);
+                    targetCtx.lineTo(w / 2, 0);
+                    targetCtx.stroke();
+                    break;
+                case 'arrow': {
+                    const bodyH = Math.max(2, h * 0.3);
+                    const headW = h;
+                    const bodyW = Math.max(0, w - headW);
+                    if (hasFill) {
+                        targetCtx.globalAlpha = layer.fillOpacity;
+                        targetCtx.fillStyle = layer.fillColor;
+                        targetCtx.beginPath();
+                        targetCtx.rect(-w / 2, -bodyH / 2, bodyW, bodyH);
+                        targetCtx.fill();
+                        targetCtx.beginPath();
+                        targetCtx.moveTo(-w / 2 + bodyW, -headW / 2);
+                        targetCtx.lineTo(-w / 2 + bodyW, headW / 2);
+                        targetCtx.lineTo(w / 2, 0);
+                        targetCtx.closePath();
+                        targetCtx.fill();
+                    }
+                    if (hasStroke) {
+                        targetCtx.globalAlpha = 1;
+                        targetCtx.strokeStyle = layer.strokeColor;
+                        targetCtx.lineWidth = layer.strokeWidth;
+                        targetCtx.beginPath();
+                        targetCtx.rect(-w / 2, -bodyH / 2, bodyW, bodyH);
+                        targetCtx.stroke();
+                        targetCtx.beginPath();
+                        targetCtx.moveTo(-w / 2 + bodyW, -headW / 2);
+                        targetCtx.lineTo(-w / 2 + bodyW, headW / 2);
+                        targetCtx.lineTo(w / 2, 0);
+                        targetCtx.closePath();
+                        targetCtx.stroke();
+                    }
+                    break;
+                }
+                case 'triangle':
+                    applyFillAndStroke(() => {
+                        targetCtx.beginPath();
+                        targetCtx.moveTo(0, -h / 2);
+                        targetCtx.lineTo(w / 2, h / 2);
+                        targetCtx.lineTo(-w / 2, h / 2);
+                        targetCtx.closePath();
+                    });
+                    break;
+                default: // rect
+                    applyFillAndStroke(() => targetCtx.rect(-w / 2, -h / 2, w, h));
+                    break;
+            }
+            targetCtx.restore();
+        }
+
         function drawDrawingPaths(targetCtx) {
             state.drawingPaths.forEach(path => {
                 if (!path.points || path.points.length < 2) return;
@@ -712,71 +1048,45 @@
             });
         }
 
-        function getImageLayerCorners(layer) {
-            const cx = layer.x + layer.w / 2;
-            const cy = layer.y + layer.h / 2;
-            const rad = (layer.rotation || 0) * Math.PI / 180;
-            const pts = [
-                { x: -layer.w / 2, y: -layer.h / 2, key: 'nw' },
-                { x: layer.w / 2, y: -layer.h / 2, key: 'ne' },
-                { x: layer.w / 2, y: layer.h / 2, key: 'se' },
-                { x: -layer.w / 2, y: layer.h / 2, key: 'sw' }
-            ];
-            return pts.map(p => ({
-                key: p.key,
-                x: cx + p.x * Math.cos(rad) - p.y * Math.sin(rad),
-                y: cy + p.x * Math.sin(rad) + p.y * Math.cos(rad)
-            }));
-        }
-
         function drawSelection(targetCtx) {
             const layer = state.layers.find(l => l.id === state.selectedLayerId);
             if (!layer) return;
+            const box = getLayerBoxAndCenter(layer);
             targetCtx.save();
             targetCtx.strokeStyle = '#4ade80';
             targetCtx.lineWidth = 2;
             targetCtx.setLineDash([8, 4]);
-
-            if (layer.type === 'image') {
-                const cx = layer.x + layer.w / 2;
-                const cy = layer.y + layer.h / 2;
-                targetCtx.translate(cx, cy);
-                targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
-                targetCtx.strokeRect(-layer.w / 2, -layer.h / 2, layer.w, layer.h);
-                targetCtx.setLineDash([]);
-                const hs = 10;
-                const handles = [
-                    { x: -layer.w / 2, y: -layer.h / 2 },
-                    { x: layer.w / 2, y: -layer.h / 2 },
-                    { x: layer.w / 2, y: layer.h / 2 },
-                    { x: -layer.w / 2, y: layer.h / 2 }
-                ];
-                targetCtx.fillStyle = '#4ade80';
-                handles.forEach(h => targetCtx.fillRect(h.x - hs / 2, h.y - hs / 2, hs, hs));
-                targetCtx.beginPath();
-                targetCtx.moveTo(0, -layer.h / 2);
-                targetCtx.lineTo(0, -layer.h / 2 - 28);
-                targetCtx.stroke();
-                targetCtx.beginPath();
-                targetCtx.fillStyle = '#fbbf24';
-                targetCtx.arc(0, -layer.h / 2 - 28, 7, 0, Math.PI * 2);
-                targetCtx.fill();
-            } else {
-                const bounds = getTextLayerBounds(layer);
-                targetCtx.translate(layer.x, layer.y);
-                targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
-                targetCtx.strokeRect(-bounds.w / 2, -bounds.h / 2, bounds.w, bounds.h);
-            }
-
+            targetCtx.translate(box.cx, box.cy);
+            targetCtx.rotate((layer.rotation || 0) * Math.PI / 180);
+            targetCtx.strokeRect(-box.w / 2, -box.h / 2, box.w, box.h);
+            targetCtx.setLineDash([]);
+            const hs = 10;
+            const handles = [
+                { x: -box.w / 2, y: -box.h / 2 },
+                { x: box.w / 2, y: -box.h / 2 },
+                { x: box.w / 2, y: box.h / 2 },
+                { x: -box.w / 2, y: box.h / 2 }
+            ];
+            targetCtx.fillStyle = '#4ade80';
+            handles.forEach(h => targetCtx.fillRect(h.x - hs / 2, h.y - hs / 2, hs, hs));
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, -box.h / 2);
+            targetCtx.lineTo(0, -box.h / 2 - 28);
+            targetCtx.stroke();
+            targetCtx.beginPath();
+            targetCtx.fillStyle = '#fbbf24';
+            targetCtx.arc(0, -box.h / 2 - 28, 7, 0, Math.PI * 2);
+            targetCtx.fill();
             targetCtx.restore();
         }
 
         function drawPoster(targetCtx, { showSelection = false } = {}) {
-            targetCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+            targetCtx.clearRect(0, 0, canvasW, canvasH);
             drawBaseImage(targetCtx);
             state.layers.forEach(layer => {
                 if (layer.type === 'image') drawImageLayer(targetCtx, layer);
                 if (layer.type === 'text') drawTextLayer(targetCtx, layer);
+                if (layer.type === 'shape') drawShapeLayer(targetCtx, layer);
             });
             drawDrawingPaths(targetCtx);
             if (showSelection) drawSelection(targetCtx);
@@ -788,8 +1098,8 @@
 
         function getCleanImageData() {
             const cleanCanvas = document.createElement('canvas');
-            cleanCanvas.width = CANVAS_W;
-            cleanCanvas.height = CANVAS_H;
+            cleanCanvas.width = canvasW;
+            cleanCanvas.height = canvasH;
             const cleanCtx = cleanCanvas.getContext('2d');
             drawPoster(cleanCtx, { showSelection: false });
             return cleanCanvas;
@@ -851,6 +1161,14 @@
             el.className = `text-center text-sm mt-2 status-${type}`;
             el.classList.remove('hidden');
             setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        function showMemoryStatus(msg, type) {
+            const el = document.getElementById('memoryStatus');
+            el.textContent = msg;
+            el.className = `text-sm text-center mt-2 status-${type}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
         }
 
         // ========== INPUT SYNC ==========
@@ -984,8 +1302,8 @@
                     img,
                     src: dataUrl,
                     remote: false,
-                    x: CANVAS_W / 2 - w / 2,
-                    y: CANVAS_H / 2 - h / 2,
+                    x: canvasW / 2 - w / 2,
+                    y: canvasH / 2 - h / 2,
                     w,
                     h,
                     rotation: 0,
@@ -1003,17 +1321,76 @@
             }
         });
 
+        // ========== SHAPES ==========
+        function setShapeType(shapeType) {
+            state.currentShapeType = shapeType;
+            document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active-shape'));
+            const btn = document.querySelector(`.shape-btn[data-shape="${shapeType}"]`);
+            if (btn) btn.classList.add('active-shape');
+        }
+
+        function addShapeLayer() {
+            const w = Math.min(300, canvasW * 0.3);
+            const h = Math.min(180, canvasH * 0.3);
+            const layer = {
+                id: `layer_${Date.now()}_${++layerCounter}`,
+                type: 'shape',
+                shapeType: state.currentShapeType,
+                x: canvasW / 2 - w / 2,
+                y: canvasH / 2 - h / 2,
+                w,
+                h,
+                rotation: 0,
+                fillColor: document.getElementById('shapeFillColor').value,
+                fillOpacity: Number(document.getElementById('shapeFillOpacity').value) / 100,
+                strokeColor: document.getElementById('shapeStrokeColor').value,
+                strokeWidth: Number(document.getElementById('shapeStrokeWidth').value),
+                cornerRadius: Number(document.getElementById('shapeCornerRadius').value)
+            };
+            state.layers.push(layer);
+            state.selectedLayerId = layer.id;
+            renderLayersList();
+            updateSelectedLayerInfo();
+            renderCanvas();
+            pushHistory();
+            showImageStatus('✅ Umbo limeongezwa', 'success');
+        }
+
+        function layerToShapeControls(layer) {
+            document.getElementById('shapeFillColor').value = layer.fillColor;
+            document.getElementById('shapeFillOpacity').value = Math.round(layer.fillOpacity * 100);
+            document.getElementById('shapeStrokeColor').value = layer.strokeColor;
+            document.getElementById('shapeStrokeWidth').value = layer.strokeWidth;
+            document.getElementById('shapeCornerRadius').value = layer.cornerRadius || 0;
+            setShapeType(layer.shapeType);
+        }
+
+        function liveUpdateSelectedShape() {
+            const layer = state.layers.find(l => l.id === state.selectedLayerId);
+            if (!layer || layer.type !== 'shape') return;
+            layer.fillColor = document.getElementById('shapeFillColor').value;
+            layer.fillOpacity = Number(document.getElementById('shapeFillOpacity').value) / 100;
+            layer.strokeColor = document.getElementById('shapeStrokeColor').value;
+            layer.strokeWidth = Number(document.getElementById('shapeStrokeWidth').value);
+            layer.cornerRadius = Number(document.getElementById('shapeCornerRadius').value);
+            renderCanvas();
+        }
+
+        ['shapeFillColor','shapeFillOpacity','shapeStrokeColor','shapeStrokeWidth','shapeCornerRadius'].forEach(id => {
+            document.getElementById(id).addEventListener('input', liveUpdateSelectedShape);
+        });
+
         // ========== AI IMAGE GENERATION ==========
-        async function generateAIImage() {
-            const subject = document.getElementById('aiPrompt').value.trim();
+        async function generateAIImage(overridePrompt, overrideNegative) {
+            const subject = (overridePrompt !== undefined ? overridePrompt : document.getElementById('aiPrompt').value).trim();
             if (!subject) {
                 showImageStatus('⚠️ Andika prompt', 'error');
                 return;
             }
 
             const style = document.getElementById('aiStyle').value;
-            const negativePrompt = document.getElementById('aiNegativePrompt').value.trim();
-            const quality = 'high detail, clean composition, professional lighting, sharp focus, 1200x630 social poster framing';
+            const negativePrompt = (overrideNegative !== undefined ? overrideNegative : document.getElementById('aiNegativePrompt').value).trim();
+            const quality = `high detail, clean composition, professional lighting, sharp focus, ${canvasW}x${canvasH} social poster framing`;
             const composedPrompt = `${subject}, ${STYLE_PRESETS[style] || ''}, ${quality}`;
 
             debugLog('🎨 Prompt iliyoundwa: ' + composedPrompt, 'info');
@@ -1022,8 +1399,8 @@
 
             try {
                 const url = new URL(`https://image.pollinations.ai/prompt/${encodeURIComponent(composedPrompt)}`);
-                url.searchParams.set('width', '1200');
-                url.searchParams.set('height', '630');
+                url.searchParams.set('width', String(canvasW));
+                url.searchParams.set('height', String(canvasH));
                 url.searchParams.set('model', 'flux');
                 url.searchParams.set('enhance', 'true');
                 if (negativePrompt) url.searchParams.set('negative_prompt', negativePrompt);
@@ -1105,15 +1482,9 @@
             document.getElementById('textSizeLabel').textContent = String(layer.size || 48);
         }
 
-        function addOrUpdateTextOverlay() {
-            const text = document.getElementById('overlayText').value.trim();
-            if (!text) {
-                showImageStatus('⚠️ Andika maandishi', 'error');
-                return;
-            }
-
-            const payload = {
-                text,
+        function readTextControlsPayload() {
+            return {
+                text: document.getElementById('overlayText').value.trim(),
                 color: document.getElementById('textColor').value,
                 strokeColor: document.getElementById('textStrokeColor').value,
                 strokeWidth: Number(document.getElementById('textStrokeWidth').value),
@@ -1132,6 +1503,14 @@
                 extrudeColor: document.getElementById('text3dColor').value,
                 extrudeDirection: document.getElementById('text3dDirection').value
             };
+        }
+
+        function addOrUpdateTextOverlay() {
+            const payload = readTextControlsPayload();
+            if (!payload.text) {
+                showImageStatus('⚠️ Andika maandishi', 'error');
+                return;
+            }
 
             const selected = state.layers.find(l => l.id === state.selectedLayerId);
             if (selected && selected.type === 'text') {
@@ -1141,8 +1520,8 @@
                 const layer = {
                     id: `layer_${Date.now()}_${++layerCounter}`,
                     type: 'text',
-                    x: CANVAS_W / 2,
-                    y: CANVAS_H / 2,
+                    x: canvasW / 2,
+                    y: canvasH / 2,
                     ...payload
                 };
                 state.layers.push(layer);
@@ -1155,6 +1534,23 @@
             renderCanvas();
             pushHistory();
         }
+
+        function liveUpdateSelectedText() {
+            const layer = state.layers.find(l => l.id === state.selectedLayerId);
+            if (!layer || layer.type !== 'text') return;
+            const payload = readTextControlsPayload();
+            if (!payload.text) return;
+            Object.assign(layer, payload);
+            renderCanvas();
+        }
+
+        const LIVE_TEXT_CONTROL_IDS = ['overlayText','textColor','textStrokeColor','text3dColor','textSize','textLetterSpacing','textRotation','textStrokeWidth','textShadowBlur','text3dDepth','textFontFamily','textAlign','text3dDirection','textBold','textItalic'];
+        LIVE_TEXT_CONTROL_IDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', liveUpdateSelectedText);
+            el.addEventListener('change', liveUpdateSelectedText);
+        });
 
         function deleteSelectedLayer() {
             if (!state.selectedLayerId) return;
@@ -1184,7 +1580,7 @@
 
         function setSelectedImageScale(multiplier) {
             const layer = state.layers.find(l => l.id === state.selectedLayerId);
-            if (!layer || layer.type !== 'image') return;
+            if (!layer || (layer.type !== 'image' && layer.type !== 'shape')) return;
             layer.w = clamp(layer.w * multiplier, 20, 2000);
             layer.h = clamp(layer.h * multiplier, 20, 2000);
             renderLayersList();
@@ -1215,10 +1611,14 @@
                 const row = document.createElement('button');
                 row.type = 'button';
                 row.className = `w-full text-left rounded px-2 py-1 text-xs border ${state.selectedLayerId === layer.id ? 'border-green-400 bg-green-900/20 text-green-200' : 'border-white/10 bg-black/20 text-gray-300'}`;
-                row.textContent = `${index + 1}. ${layer.type === 'text' ? 'Text' : 'Image'}${layer.type === 'text' ? `: ${layer.text.slice(0, 20)}` : ''}`;
+                let label = 'Image';
+                if (layer.type === 'text') label = `Text: ${layer.text.slice(0, 20)}`;
+                if (layer.type === 'shape') label = `Shape: ${layer.shapeType}`;
+                row.textContent = `${index + 1}. ${label}`;
                 row.addEventListener('click', () => {
                     state.selectedLayerId = layer.id;
                     if (layer.type === 'text') layerToTextControls(layer);
+                    if (layer.type === 'shape') layerToShapeControls(layer);
                     renderLayersList();
                     updateSelectedLayerInfo();
                     renderCanvas();
@@ -1236,28 +1636,27 @@
             };
         }
 
-        function toLocalLayerPoint(layer, point) {
-            const cx = layer.x + layer.w / 2;
-            const cy = layer.y + layer.h / 2;
+        function toLocalPointAroundCenter(cx, cy, rotation, point) {
             const dx = point.x - cx;
             const dy = point.y - cy;
-            const rad = -(layer.rotation || 0) * Math.PI / 180;
+            const rad = -(rotation || 0) * Math.PI / 180;
             return {
                 x: dx * Math.cos(rad) - dy * Math.sin(rad),
                 y: dx * Math.sin(rad) + dy * Math.cos(rad)
             };
         }
 
-        function hitTestImageLayer(layer, pos) {
-            const local = toLocalLayerPoint(layer, pos);
-            const inside = local.x >= -layer.w / 2 && local.x <= layer.w / 2 && local.y >= -layer.h / 2 && local.y <= layer.h / 2;
+        function hitTestLayerUnified(layer, pos) {
+            const box = getLayerBoxAndCenter(layer);
+            const local = toLocalPointAroundCenter(box.cx, box.cy, layer.rotation, pos);
+            const inside = local.x >= -box.w / 2 && local.x <= box.w / 2 && local.y >= -box.h / 2 && local.y <= box.h / 2;
 
             const handleSize = 14;
             const corners = [
-                { x: -layer.w / 2, y: -layer.h / 2, type: 'resize' },
-                { x: layer.w / 2, y: -layer.h / 2, type: 'resize' },
-                { x: layer.w / 2, y: layer.h / 2, type: 'resize' },
-                { x: -layer.w / 2, y: layer.h / 2, type: 'resize' }
+                { x: -box.w / 2, y: -box.h / 2 },
+                { x: box.w / 2, y: -box.h / 2 },
+                { x: box.w / 2, y: box.h / 2 },
+                { x: -box.w / 2, y: box.h / 2 }
             ];
 
             for (const c of corners) {
@@ -1266,7 +1665,7 @@
                 }
             }
 
-            if (Math.abs(local.x) < 14 && Math.abs(local.y + layer.h / 2 + 28) < 14) {
+            if (Math.abs(local.x) < 14 && Math.abs(local.y + box.h / 2 + 28) < 14) {
                 return { type: 'rotate' };
             }
 
@@ -1274,28 +1673,11 @@
             return { type: 'move' };
         }
 
-        function hitTestTextLayer(layer, pos) {
-            const bounds = getTextLayerBounds(layer);
-            const dx = pos.x - layer.x;
-            const dy = pos.y - layer.y;
-            const rad = -(layer.rotation || 0) * Math.PI / 180;
-            const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
-            const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
-            const inside = lx >= -bounds.w / 2 && lx <= bounds.w / 2 && ly >= -bounds.h / 2 && ly <= bounds.h / 2;
-            return inside ? { type: 'move' } : null;
-        }
-
         function findTopLayerAt(pos) {
             for (let i = state.layers.length - 1; i >= 0; i--) {
                 const layer = state.layers[i];
-                if (layer.type === 'image') {
-                    const hit = hitTestImageLayer(layer, pos);
-                    if (hit) return { layer, hit };
-                }
-                if (layer.type === 'text') {
-                    const hit = hitTestTextLayer(layer, pos);
-                    if (hit) return { layer, hit };
-                }
+                const hit = hitTestLayerUnified(layer, pos);
+                if (hit) return { layer, hit };
             }
             return null;
         }
@@ -1323,15 +1705,25 @@
                 updateSelectedLayerInfo();
                 renderLayersList();
                 if (found.layer.type === 'text') layerToTextControls(found.layer);
+                if (found.layer.type === 'shape') layerToShapeControls(found.layer);
 
-                if (found.layer.type === 'image' && found.hit.type === 'resize') {
-                    state.pointerAction = { type: 'resize-image', layerId: found.layer.id, startW: found.layer.w, startH: found.layer.h, startDist: Math.hypot(pos.x - (found.layer.x + found.layer.w / 2), pos.y - (found.layer.y + found.layer.h / 2)) };
-                } else if (found.layer.type === 'image' && found.hit.type === 'rotate') {
-                    const cx = found.layer.x + found.layer.w / 2;
-                    const cy = found.layer.y + found.layer.h / 2;
-                    state.pointerAction = { type: 'rotate-layer', layerId: found.layer.id, startAngle: Math.atan2(pos.y - cy, pos.x - cx), startRotation: found.layer.rotation || 0 };
+                const box = getLayerBoxAndCenter(found.layer);
+
+                if (found.hit.type === 'resize') {
+                    state.pointerAction = {
+                        type: 'resize-layer',
+                        layerId: found.layer.id,
+                        isText: found.layer.type === 'text',
+                        startW: box.w,
+                        startH: box.h,
+                        startSize: found.layer.size,
+                        startLetterSpacing: found.layer.letterSpacing,
+                        startDist: Math.hypot(pos.x - box.cx, pos.y - box.cy)
+                    };
+                } else if (found.hit.type === 'rotate') {
+                    state.pointerAction = { type: 'rotate-layer', layerId: found.layer.id, startAngle: Math.atan2(pos.y - box.cy, pos.x - box.cx), startRotation: found.layer.rotation || 0 };
                 } else {
-                    state.pointerAction = { type: 'move-layer', layerId: found.layer.id, offX: pos.x - (found.layer.type === 'image' ? found.layer.x : found.layer.x), offY: pos.y - (found.layer.type === 'image' ? found.layer.y : found.layer.y) };
+                    state.pointerAction = { type: 'move-layer', layerId: found.layer.id, offX: pos.x - found.layer.x, offY: pos.y - found.layer.y };
                 }
                 renderCanvas();
                 return;
@@ -1362,24 +1754,28 @@
             if (!layer && action.layerId) return;
 
             if (action.type === 'move-layer') {
-                if (layer.type === 'image') {
-                    layer.x = pos.x - action.offX;
-                    layer.y = pos.y - action.offY;
-                } else {
-                    layer.x = pos.x - action.offX;
-                    layer.y = pos.y - action.offY;
-                }
-            } else if (action.type === 'resize-image') {
-                const cx = layer.x + action.startW / 2;
-                const cy = layer.y + action.startH / 2;
-                const dist = Math.hypot(pos.x - cx, pos.y - cy);
+                layer.x = pos.x - action.offX;
+                layer.y = pos.y - action.offY;
+            } else if (action.type === 'resize-layer') {
+                const box = getLayerBoxAndCenter(layer);
+                const dist = Math.hypot(pos.x - box.cx, pos.y - box.cy);
                 const ratio = clamp(dist / (action.startDist || 1), 0.1, 10);
-                layer.w = clamp(action.startW * ratio, 20, 2200);
-                layer.h = clamp(action.startH * ratio, 20, 2200);
+                if (action.isText) {
+                    layer.size = clamp(action.startSize * ratio, 8, 400);
+                    layer.letterSpacing = action.startLetterSpacing * ratio;
+                    const sizeInput = document.getElementById('textSize');
+                    if (state.selectedLayerId === layer.id) {
+                        sizeInput.value = Math.round(layer.size);
+                        document.getElementById('textSizeLabel').textContent = String(Math.round(layer.size));
+                        document.getElementById('textLetterSpacing').value = Math.round(layer.letterSpacing);
+                    }
+                } else {
+                    layer.w = clamp(action.startW * ratio, 20, 2200);
+                    layer.h = clamp(action.startH * ratio, 20, 2200);
+                }
             } else if (action.type === 'rotate-layer') {
-                const cx = layer.type === 'image' ? layer.x + layer.w / 2 : layer.x;
-                const cy = layer.type === 'image' ? layer.y + layer.h / 2 : layer.y;
-                const ang = Math.atan2(pos.y - cy, pos.x - cx);
+                const box = getLayerBoxAndCenter(layer);
+                const ang = Math.atan2(pos.y - box.cy, pos.x - box.cx);
                 layer.rotation = action.startRotation + ((ang - action.startAngle) * 180 / Math.PI);
             } else if (action.type === 'pan-base') {
                 const dx = pos.x - action.startX;
@@ -1401,24 +1797,79 @@
             renderCanvas();
         }
 
+        // ========== PINCH ZOOM (multi-pointer) ==========
+        const activePointers = new Map();
+        let pinchStartDist = null;
+        let pinchStartScale = 1;
+        let pinchActive = false;
+
+        function pointerDistance() {
+            const pts = Array.from(activePointers.values());
+            if (pts.length < 2) return null;
+            return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        }
+
         canvas.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             canvas.setPointerCapture(e.pointerId);
-            pointerDown(e.clientX, e.clientY);
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (activePointers.size === 2) {
+                // cancel any single-pointer action in progress
+                state.isPointerDown = false;
+                state.pointerAction = null;
+                state.currentPath = null;
+                pinchStartDist = pointerDistance();
+                pinchStartScale = state.baseTransform.scale;
+                pinchActive = true;
+                return;
+            }
+
+            if (activePointers.size === 1) {
+                pointerDown(e.clientX, e.clientY);
+            }
         });
 
         canvas.addEventListener('pointermove', (e) => {
             e.preventDefault();
+            if (activePointers.has(e.pointerId)) {
+                activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            }
+
+            if (activePointers.size >= 2 && pinchStartDist) {
+                const newDist = pointerDistance();
+                if (newDist) {
+                    const scale = clamp(pinchStartScale * (newDist / pinchStartDist), 0.2, 6);
+                    state.baseTransform.scale = scale;
+                    renderCanvas();
+                }
+                return;
+            }
+
             pointerMove(e.clientX, e.clientY);
         });
 
+        function releasePointer(e) {
+            activePointers.delete(e.pointerId);
+            if (activePointers.size < 2) {
+                if (pinchActive) {
+                    pinchActive = false;
+                    pinchStartDist = null;
+                    pushHistory();
+                }
+            }
+            if (activePointers.size === 0) {
+                pointerUp();
+            }
+        }
+
         canvas.addEventListener('pointerup', (e) => {
             e.preventDefault();
-            pointerUp();
+            releasePointer(e);
         });
 
-        canvas.addEventListener('pointercancel', pointerUp);
-        canvas.addEventListener('mouseleave', pointerUp);
+        canvas.addEventListener('pointercancel', (e) => releasePointer(e));
+        canvas.addEventListener('mouseleave', () => { if (activePointers.size === 0) pointerUp(); });
 
         canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
@@ -1469,6 +1920,51 @@
             post.select();
         }
 
+        // ========== AI MEMORY ==========
+        function loadAIMemory() {
+            try {
+                const raw = localStorage.getItem('ai_memory');
+                if (raw) {
+                    state.aiMemory = JSON.parse(raw);
+                }
+            } catch (e) {
+                console.error('AI memory load error', e);
+            }
+            document.getElementById('memTone').value = state.aiMemory.tone || '';
+            document.getElementById('memBusiness').value = state.aiMemory.business || '';
+            document.getElementById('memInstructions').value = state.aiMemory.instructions || '';
+        }
+
+        function saveAIMemory() {
+            state.aiMemory = {
+                tone: document.getElementById('memTone').value.trim(),
+                business: document.getElementById('memBusiness').value.trim(),
+                instructions: document.getElementById('memInstructions').value.trim()
+            };
+            localStorage.setItem('ai_memory', JSON.stringify(state.aiMemory));
+            showMemoryStatus('✅ Kumbukumbu imehifadhiwa', 'success');
+            showToast('✅ Kumbukumbu ya AI imehifadhiwa!', 'success');
+        }
+
+        function clearAIMemory() {
+            state.aiMemory = { tone: '', business: '', instructions: '' };
+            localStorage.removeItem('ai_memory');
+            document.getElementById('memTone').value = '';
+            document.getElementById('memBusiness').value = '';
+            document.getElementById('memInstructions').value = '';
+            showMemoryStatus('🗑️ Kumbukumbu imefutwa', 'info');
+        }
+
+        function getAIMemoryPromptFragment() {
+            const m = state.aiMemory;
+            if (!m || (!m.tone && !m.business && !m.instructions)) return '';
+            let fragment = '\n\nKumbukumbu ya mtumiaji (tumia kama muktadha):';
+            if (m.tone) fragment += `\n- Mtindo wa kuandika: ${m.tone}`;
+            if (m.business) fragment += `\n- Maelezo ya biashara: ${m.business}`;
+            if (m.instructions) fragment += `\n- Maelekezo ya ziada: ${m.instructions}`;
+            return fragment;
+        }
+
         // ========== MISTRAL ==========
         async function requestMistral(messages) {
             const apiKey = document.getElementById('apiKey').value.trim();
@@ -1506,7 +2002,7 @@
                 const suggestion = await requestMistral([
                     {
                         role: 'user',
-                        content: `Kwa post hii: "${postText}" pendekeza maneno 3-7 ya headline ya picha. Jibu text moja tu kwa Kiswahili.`
+                        content: `Kwa post hii: "${postText}" pendekeza maneno 3-7 ya headline ya picha. Jibu text moja tu kwa Kiswahili.${getAIMemoryPromptFragment()}`
                     }
                 ]);
                 document.getElementById('overlayText').value = suggestion;
@@ -1531,7 +2027,7 @@
                 const reply = await requestMistral([
                     {
                         role: 'system',
-                        content: 'Wewe ni mtaalamu wa Facebook posts. Andaa post yenye mvuto, bila markdown, bila asterisks, kwa Kiswahili.'
+                        content: 'Wewe ni mtaalamu wa Facebook posts. Andaa post yenye mvuto, bila markdown, bila asterisks, kwa Kiswahili.' + getAIMemoryPromptFragment()
                     },
                     ...state.conversation
                 ]);
@@ -1566,7 +2062,7 @@
                 const reply = await requestMistral([
                     {
                         role: 'system',
-                        content: 'Mtaalamu wa posts. Bila markdown/bold/asterisks. Kiswahili.'
+                        content: 'Mtaalamu wa posts. Bila markdown/bold/asterisks. Kiswahili.' + getAIMemoryPromptFragment()
                     },
                     ...state.conversation
                 ]);
@@ -1579,12 +2075,167 @@
             }
         }
 
+        // ========== ACTIVITY TIMELINE ==========
+        function addTimelineStep(step, status = 'active') {
+            state.aiTimeline.push({ time: new Date().toLocaleTimeString(), step, status });
+            renderTimeline();
+        }
+
+        function updateTimelineStep(stepName, status) {
+            for (let i = state.aiTimeline.length - 1; i >= 0; i--) {
+                if (state.aiTimeline[i].step === stepName) {
+                    state.aiTimeline[i].status = status;
+                    break;
+                }
+            }
+            renderTimeline();
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('aiTimeline');
+            container.textContent = '';
+            const icons = { active: '🔄', done: '✅', error: '❌', pending: '⏳' };
+            state.aiTimeline.forEach(item => {
+                const row = document.createElement('div');
+                row.className = `timeline-step timeline-${item.status}`;
+                const icon = document.createElement('span');
+                icon.textContent = icons[item.status] || '⏳';
+                const text = document.createElement('span');
+                text.textContent = `[${item.time}] ${item.step}`;
+                row.appendChild(icon);
+                row.appendChild(text);
+                container.appendChild(row);
+            });
+        }
+
+        // ========== AI CONTENT PLAN ==========
+        function togglePlanMode() {
+            const form = document.getElementById('planModeForm');
+            const btn = document.getElementById('planModeBtn');
+            const isHidden = form.classList.contains('hidden');
+            if (isHidden) {
+                form.classList.remove('hidden');
+                btn.classList.add('active-toggle');
+                const today = new Date().toISOString().split('T')[0];
+                const now = new Date();
+                document.getElementById('planDate').value = today;
+                document.getElementById('planTime').value = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            } else {
+                form.classList.add('hidden');
+                btn.classList.remove('active-toggle');
+            }
+        }
+
+        function extractJsonFromText(text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                const match = text.match(/\{[\s\S]*\}/);
+                if (match) {
+                    try { return JSON.parse(match[0]); } catch (e2) { /* fall through */ }
+                }
+                throw new Error('Imeshindwa kuchakata JSON kutoka AI');
+            }
+        }
+
+        async function generateContentPlan() {
+            const topic = document.getElementById('planTopic').value.trim();
+            if (!topic) {
+                showToast('⚠️ Andika mada ya post', 'warn');
+                return;
+            }
+            const platform = document.getElementById('planPlatform').value;
+            const date = document.getElementById('planDate').value;
+            const time = document.getElementById('planTime').value;
+            const style = document.getElementById('planStyle').value;
+            const scheduledAt = date && time ? `${date}T${time}` : '';
+
+            state.aiTimeline = [];
+            addTimelineStep('Kuandaa ombi la AI', 'active');
+
+            const systemPrompt = `Wewe ni mtaalamu wa content planning kwa mitandao ya kijamii Tanzania/Kiswahili. Rudisha JSON PEKEE (bila maelezo mengine, bila markdown fences) yenye fields: caption (Kiswahili, tayari kutumika), imagePrompt (Kiingereza, maelezo ya picha), negativePrompt (Kiingereza), format (moja ya: fb-feed, ig-square, ig-portrait, tiktok), scheduledAt (ISO string), cta (call to action fupi kwa Kiswahili), tone (mtindo uliotumika).${getAIMemoryPromptFragment()}`;
+            const userPrompt = `Mada: ${topic}\nPlatform: ${platform}\nMtindo: ${style}\nRatiba inayopendekezwa: ${scheduledAt || 'sasa hivi'}`;
+
+            updateTimelineStep('Kuandaa ombi la AI', 'done');
+            addTimelineStep('Kutuma ombi kwa Mistral AI', 'active');
+
+            try {
+                const raw = await requestMistral([
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ]);
+                updateTimelineStep('Kutuma ombi kwa Mistral AI', 'done');
+                addTimelineStep('Kuchakata jibu la AI', 'active');
+
+                const plan = extractJsonFromText(raw);
+                plan.format = FORMAT_PRESETS[plan.format] ? plan.format : platform;
+                plan.scheduledAt = plan.scheduledAt || scheduledAt;
+                updateTimelineStep('Kuchakata jibu la AI', 'done');
+                addTimelineStep('Mpango uko tayari kwa ukaguzi', 'done');
+
+                state.currentPlan = plan;
+                showApprovalModal(plan);
+                showToast('Kagua na uhakikishe kabla ya kuchapisha. AI inaweza kukosea.', 'warn');
+            } catch (err) {
+                updateTimelineStep('Kutuma ombi kwa Mistral AI', 'error');
+                addTimelineStep('Hitilafu: ' + err.message, 'error');
+                showToast('❌ ' + err.message, 'error');
+            }
+        }
+
+        function showApprovalModal(plan) {
+            document.getElementById('planCaption').value = plan.caption || '';
+            document.getElementById('planImagePrompt').value = plan.imagePrompt || '';
+            document.getElementById('planNegativePrompt').value = plan.negativePrompt || '';
+            document.getElementById('planFormatDisplay').value = plan.format || 'fb-feed';
+            document.getElementById('planScheduledDisplay').value = plan.scheduledAt || '';
+            document.getElementById('planCta').value = plan.cta || '';
+            document.getElementById('approvalModal').classList.remove('hidden');
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('approvalModal').classList.add('hidden');
+        }
+
+        async function approveContentPlan() {
+            const caption = document.getElementById('planCaption').value.trim();
+            const imagePrompt = document.getElementById('planImagePrompt').value.trim();
+            const negativePrompt = document.getElementById('planNegativePrompt').value.trim();
+            const format = document.getElementById('planFormatDisplay').value;
+            const scheduledAt = document.getElementById('planScheduledDisplay').value;
+            const cta = document.getElementById('planCta').value.trim();
+
+            const fullCaption = cta ? `${caption}\n\n${cta}` : caption;
+            document.getElementById('postText').value = fullCaption;
+
+            if (FORMAT_PRESETS[format]) {
+                document.getElementById('formatSelect').value = format;
+                setFormat(format);
+            }
+
+            if (scheduledAt) {
+                const [d, t] = scheduledAt.split('T');
+                document.querySelectorAll('.publish-date').forEach(el => { if (d) el.value = d; });
+                document.querySelectorAll('.publish-time').forEach(el => { if (t) el.value = t.slice(0, 5); });
+                updateCountdowns();
+            }
+
+            closeApprovalModal();
+            showToast('Kagua na uhakikishe kabla ya kuchapisha. AI inaweza kukosea.', 'warn');
+
+            if (imagePrompt) {
+                await generateAIImage(imagePrompt, negativePrompt);
+            }
+            saveToLocalStorage();
+        }
+
         // ========== SETTINGS/PAGES ==========
         function saveSettings() {
             state.apiKey = document.getElementById('apiKey').value.trim();
             state.supabaseUrl = document.getElementById('supabaseUrl').value.trim();
             state.supabaseKey = document.getElementById('supabaseKey').value.trim();
             saveToLocalStorage();
+            renderPublishPages();
             showSettingsStatus('✅ Mipangilio imehifadhiwa!', 'success');
             showToast('✅ Mipangilio imehifadhiwa!', 'success');
             if (state.supabaseUrl && state.supabaseKey) {
@@ -1619,6 +2270,7 @@
             });
             renderPublishPages();
             updatePublishInfo();
+            renderVideoPageOptions();
             saveToLocalStorage();
         }
 
@@ -1647,6 +2299,8 @@
         function renderPublishPages() {
             const container = document.getElementById('publishPages');
             container.textContent = '';
+            const backendSet = !!document.getElementById('backendEndpoint').value.trim();
+
             state.pages.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.className = 'page-card';
@@ -1707,6 +2361,14 @@
                 card.appendChild(top);
                 card.appendChild(grid);
                 card.appendChild(countdown);
+
+                if (!backendSet) {
+                    const note = document.createElement('div');
+                    note.className = 'hint-text';
+                    note.textContent = '⚠️ DEMO TU - Itafanya kazi tu ikiwa tab iko wazi. Weka Backend Endpoint kwa scheduling ya kuaminika.';
+                    card.appendChild(note);
+                }
+
                 container.appendChild(card);
             });
 
@@ -1764,7 +2426,9 @@
                     pastPosts: state.pastPosts,
                     apiKey: document.getElementById('apiKey').value,
                     supabaseUrl: document.getElementById('supabaseUrl').value,
-                    supabaseKey: document.getElementById('supabaseKey').value
+                    supabaseKey: document.getElementById('supabaseKey').value,
+                    backendEndpoint: document.getElementById('backendEndpoint').value,
+                    videoJobs: state.videoJobs
                 };
                 localStorage.setItem('ai_poster_data', JSON.stringify(data));
             } catch (e) {
@@ -1780,9 +2444,11 @@
                 if (Array.isArray(data.pages)) state.pages = data.pages;
                 if (Array.isArray(data.conversation)) state.conversation = data.conversation;
                 if (Array.isArray(data.pastPosts)) state.pastPosts = data.pastPosts;
+                if (Array.isArray(data.videoJobs)) state.videoJobs = data.videoJobs;
                 if (data.apiKey) document.getElementById('apiKey').value = data.apiKey;
                 if (data.supabaseUrl) document.getElementById('supabaseUrl').value = data.supabaseUrl;
                 if (data.supabaseKey) document.getElementById('supabaseKey').value = data.supabaseKey;
+                if (data.backendEndpoint) document.getElementById('backendEndpoint').value = data.backendEndpoint;
             } catch (e) {
                 console.error('Load error:', e);
             }
@@ -1941,6 +2607,276 @@
             }
         }
 
+        // ========== VIDEO POST ==========
+        let currentVideoFile = null;
+        let currentVideoDuration = 0;
+
+        function renderVideoPageOptions() {
+            const sel = document.getElementById('videoPage');
+            const prevValue = sel.value;
+            sel.textContent = '';
+            state.pages.forEach((p, i) => {
+                const opt = document.createElement('option');
+                opt.value = String(i);
+                opt.textContent = p.name;
+                sel.appendChild(opt);
+            });
+            if (prevValue) sel.value = prevValue;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        document.getElementById('videoUpload').addEventListener('change', function(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            currentVideoFile = file;
+            const metaDiv = document.getElementById('videoMeta');
+            metaDiv.textContent = `📄 ${file.name} — ${formatBytes(file.size)} — inapakia metadata...`;
+
+            const videoEl = document.getElementById('videoPreview');
+            const url = URL.createObjectURL(file);
+            videoEl.src = url;
+            videoEl.onloadedmetadata = () => {
+                currentVideoDuration = videoEl.duration;
+                metaDiv.textContent = `📄 ${file.name} — ${formatBytes(file.size)} — muda: ${Math.round(currentVideoDuration)}s`;
+            };
+        });
+
+        async function submitVideoJob() {
+            if (!currentVideoFile) {
+                showToast('⚠️ Pakia video kwanza', 'warn');
+                return;
+            }
+            const pageIdx = Number(document.getElementById('videoPage').value);
+            const page = state.pages[pageIdx];
+            if (!page) {
+                showToast('⚠️ Chagua page', 'warn');
+                return;
+            }
+            const caption = document.getElementById('videoCaption').value.trim();
+            const date = document.getElementById('videoDate').value;
+            const time = document.getElementById('videoTime').value;
+            const scheduledAt = date && time ? `${date}T${time}` : '';
+            const backendEndpoint = document.getElementById('backendEndpoint').value.trim();
+
+            const job = {
+                id: `video_${Date.now()}`,
+                type: 'video',
+                status: 'queued',
+                videoName: currentVideoFile.name,
+                videoSize: currentVideoFile.size,
+                videoDuration: currentVideoDuration,
+                caption,
+                pageId: page.id,
+                pageName: page.name,
+                scheduledAt,
+                createdAt: new Date().toISOString(),
+                note: ''
+            };
+
+            if (!backendEndpoint) {
+                job.status = 'local-demo';
+                job.note = 'DEMO TU - Backend Endpoint haijawekwa. Kazi hii haijatumwa popote.';
+            } else {
+                try {
+                    const form = new FormData();
+                    form.append('video', currentVideoFile);
+                    form.append('caption', caption);
+                    form.append('pageId', page.id);
+                    form.append('scheduledAt', scheduledAt);
+                    const res = await fetch(backendEndpoint, { method: 'POST', body: form });
+                    if (res.ok) {
+                        job.status = 'submitted';
+                        job.note = 'Imetumwa kwa backend.';
+                    } else {
+                        job.status = 'error';
+                        job.note = `Backend error ${res.status}`;
+                    }
+                } catch (err) {
+                    job.status = 'error';
+                    job.note = 'Hitilafu: ' + err.message;
+                }
+            }
+
+            state.videoJobs.unshift(job);
+            renderVideoJobs();
+            saveToLocalStorage();
+            showToast(job.status === 'local-demo' ? '⚠️ Kazi imeandikwa DEMO TU' : '✅ Kazi ya video imeongezwa', job.status === 'error' ? 'error' : 'success');
+        }
+
+        function renderVideoJobs() {
+            const list = document.getElementById('videoJobsList');
+            list.textContent = '';
+            if (state.videoJobs.length === 0) {
+                const p = document.createElement('div');
+                p.className = 'text-xs text-gray-500';
+                p.textContent = 'Hakuna kazi za video bado';
+                list.appendChild(p);
+                return;
+            }
+            state.videoJobs.forEach(job => {
+                const card = document.createElement('div');
+                card.className = 'job-card';
+
+                const title = document.createElement('div');
+                title.className = 'text-white font-semibold';
+                title.textContent = `${job.videoName} → ${job.pageName}`;
+                card.appendChild(title);
+
+                const statusLine = document.createElement('div');
+                statusLine.className = 'text-gray-400';
+                statusLine.textContent = `Status: ${job.status} | ${formatBytes(job.videoSize)} | ${Math.round(job.videoDuration || 0)}s`;
+                card.appendChild(statusLine);
+
+                if (job.scheduledAt) {
+                    const sched = document.createElement('div');
+                    sched.className = 'text-gray-500';
+                    sched.textContent = `Ratiba: ${job.scheduledAt}`;
+                    card.appendChild(sched);
+                }
+
+                if (job.note) {
+                    const note = document.createElement('div');
+                    note.className = 'hint-text';
+                    note.textContent = job.note;
+                    card.appendChild(note);
+                }
+
+                list.appendChild(card);
+            });
+        }
+
+        // ========== COMMENT INBOX ==========
+        async function loadComments() {
+            const btn = document.getElementById('loadCommentsBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Inapakia...';
+            state.comments = [];
+
+            for (const page of state.pages) {
+                try {
+                    const url = `https://graph.facebook.com/v19.0/${page.id}/posts?fields=message,comments{message,from,created_time,id}&access_token=${encodeURIComponent(page.token)}`;
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    if (!res.ok) {
+                        debugLog(`⚠️ Comment load error for ${page.name}: ${json.error?.message || res.status}`, 'warn');
+                        continue;
+                    }
+                    (json.data || []).forEach(post => {
+                        const comments = post.comments?.data || [];
+                        comments.forEach(c => {
+                            state.comments.push({
+                                commentId: c.id,
+                                author: c.from?.name || 'Mtumiaji',
+                                text: c.message || '',
+                                time: c.created_time || '',
+                                postMessage: (post.message || '').slice(0, 80),
+                                pageName: page.name,
+                                pageToken: page.token,
+                                replied: false
+                            });
+                        });
+                    });
+                } catch (err) {
+                    debugLog('⚠️ Comment fetch error: ' + err.message, 'warn');
+                }
+            }
+
+            btn.disabled = false;
+            btn.textContent = '🔄 Pakia Maoni';
+            renderComments();
+        }
+
+        function renderComments() {
+            const list = document.getElementById('commentsList');
+            list.textContent = '';
+            if (state.comments.length === 0) {
+                const p = document.createElement('div');
+                p.className = 'text-xs text-gray-500';
+                p.textContent = 'Hakuna maoni yaliyopakiwa. Bonyeza Pakia Maoni.';
+                list.appendChild(p);
+                return;
+            }
+
+            state.comments.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'comment-card';
+
+                const postLine = document.createElement('div');
+                postLine.className = 'text-gray-500 text-xs';
+                postLine.textContent = `📄 ${c.pageName}: "${c.postMessage}"`;
+                card.appendChild(postLine);
+
+                const authorLine = document.createElement('div');
+                authorLine.className = 'text-white text-sm font-semibold mt-1';
+                authorLine.textContent = c.author;
+                card.appendChild(authorLine);
+
+                const textLine = document.createElement('div');
+                textLine.className = 'text-gray-300 text-sm';
+                textLine.textContent = c.text;
+                card.appendChild(textLine);
+
+                const timeLine = document.createElement('div');
+                timeLine.className = 'text-gray-500 text-xs mt-1';
+                timeLine.textContent = c.time;
+                card.appendChild(timeLine);
+
+                if (c.replied) {
+                    const repliedNote = document.createElement('div');
+                    repliedNote.className = 'status-success text-xs mt-1';
+                    repliedNote.textContent = '✅ Umejibu';
+                    card.appendChild(repliedNote);
+                } else {
+                    const replyArea = document.createElement('textarea');
+                    replyArea.rows = 2;
+                    replyArea.className = 'mt-2';
+                    replyArea.placeholder = 'Andika jibu lako hapa...';
+
+                    const replyBtn = document.createElement('button');
+                    replyBtn.className = 'btn-secondary mt-1';
+                    replyBtn.textContent = 'Tuma Jibu';
+                    replyBtn.addEventListener('click', () => submitCommentReply(c.commentId, c.pageToken, replyArea, replyBtn, c));
+
+                    card.appendChild(replyArea);
+                    card.appendChild(replyBtn);
+                }
+
+                list.appendChild(card);
+            });
+        }
+
+        async function submitCommentReply(commentId, pageToken, replyAreaEl, btnEl, commentObj) {
+            const message = replyAreaEl.value.trim();
+            if (!message) {
+                showToast('⚠️ Andika jibu kabla ya kutuma', 'warn');
+                return;
+            }
+            btnEl.disabled = true;
+            btnEl.textContent = '⏳ Inatuma...';
+            try {
+                const res = await fetch(`https://graph.facebook.com/v19.0/${commentId}/comments`, {
+                    method: 'POST',
+                    body: new URLSearchParams({ message, access_token: pageToken })
+                });
+                const json = await res.json();
+                if (!res.ok || !json.id) {
+                    throw new Error(json.error?.message || 'Imeshindwa kutuma jibu');
+                }
+                if (commentObj) commentObj.replied = true;
+                showToast('✅ Jibu limetumwa', 'success');
+                renderComments();
+            } catch (err) {
+                showToast('❌ ' + err.message, 'error');
+                btnEl.disabled = false;
+                btnEl.textContent = 'Tuma Jibu';
+            }
+        }
+
         // ========== EVENT BINDINGS ==========
         document.getElementById('drawSize').addEventListener('input', function() {
             document.getElementById('drawSizeLabel').textContent = this.value;
@@ -1962,16 +2898,33 @@
             pushHistory();
         });
 
+        document.getElementById('formatSelect').addEventListener('change', function() {
+            if (this.value === 'custom') {
+                document.getElementById('customFormatInputs').classList.remove('hidden');
+                document.getElementById('applyCustomFormatBtn').classList.remove('hidden');
+            } else {
+                setFormat(this.value);
+            }
+        });
+
+        document.getElementById('backendEndpoint').addEventListener('change', function() {
+            saveToLocalStorage();
+            renderPublishPages();
+        });
+
         // ========== INIT ==========
         loadFromLocalStorage();
+        loadAIMemory();
         renderPages();
         renderLayersList();
         updateSelectedLayerInfo();
         syncAdjustmentInputs();
         syncFitModeInput();
         setTool('select');
-        renderCanvas();
-        pushHistory();
+        setShapeType('rect');
+        renderVideoJobs();
+        renderComments();
+        setFormat('fb-feed');
 
         debugLog('🚀 AI Poster Pro imeanza', 'success');
         debugLog('🛡️ Export now follows render pipeline + CORS checks', 'info');
