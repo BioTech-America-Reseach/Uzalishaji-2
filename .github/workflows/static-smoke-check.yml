@@ -7,6 +7,9 @@ on:
       - copilot/**
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   smoke-check:
     runs-on: ubuntu-latest
